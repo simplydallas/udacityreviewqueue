@@ -38,8 +38,8 @@
   * a click on the id will opan a modal with detailed information.
 * Project name
 * Project certification status (training, certified, etc.)
-* Current active stats
-  * This is the active state in the Udacity dashboard, so basically if you have it checked off as a review you want in the actual Udacity review site.  This is not an indication of if you have it toggled on in your queue.
+* Current price
+  * This is the price the last time you refreshed your certification list using your token so it can get out of date.
 * Queue toggle
   * green is on, white is off, and grey is disabled because you are not certified yet.
 
