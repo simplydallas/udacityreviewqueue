@@ -582,15 +582,9 @@ function copyCodeToClipboard() {
     var aux = document.createElement("textarea");
 
     aux.cols = "400";
-    aux.rows = "100";
+    aux.rows = "10";
 
-    aux.value = "copy($.ajax({" +
-      "method: 'GET'," +
-      "url: 'https://review-api.udacity.com/api/v1/me/submissions/completed.json'," +
-      "headers: { Authorization: JSON.parse(localStorage.currentUser).token }," +
-      "async: false" +
-      "}).done(function(data){console.log('The data should now be in your clipboard " +
-      "and ready to paste into the tool');}).responseJSON)";
+    aux.value = "copy(JSON.parse(localStorage.currentUser).token)";
 
     document.body.appendChild(aux);
     aux.select();
