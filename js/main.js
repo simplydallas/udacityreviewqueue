@@ -56,7 +56,7 @@ var options = {
                 { name: 'nanodegree', attr: 'data-content'},
                 { name: 'checkcert', attr: 'data-cert'},
                 { name: 'initstate', attr: 'data-init'},
-                'name', 'status', 'active', ],
+                'name', 'status', 'money', ],
   page: 5,
   plugins: [ ListPagination({outerWindow: 1}),
              ListFuzzySearch() ],
@@ -70,7 +70,7 @@ var options = {
         '</div><div class="cell col-sm-2 col-xs-2">' +
         '<span class="status"></span>' +
         '</div><div class="cell col-sm-2 col-xs-2">' +
-        '<span class="active full_feedback" data-placement="auto top" ' +
+        '<span class="money" data-placement="auto top" ' +
         'data-toggle="popover"' +
         'data-trigger="hover"></span>' +
         '</div><div class="cell checkbox-slider--a-rounded col-sm-2 col-xs-2">' +
