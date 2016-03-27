@@ -1,0 +1,231 @@
+
+
+/* ==========================================================================
+   Author's custom styles
+   ========================================================================== */
+
+* {
+  font-family: 'Roboto', sans-serif;
+}
+
+html {
+    height: 100%;
+}
+body {
+    height: 100%;
+    margin: 0;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.hoverable {
+  font-weight: 500;
+  color: #000;
+  cursor: help;
+}
+
+.popover {
+  min-width: 320px; !important;
+  max-width: 600px; !important;
+  width: auto; !important;
+  height: auto; !important;
+}
+
+.fa {
+  transition: all .1s linear;
+}
+.pulse{
+  color: #8F7;
+  text-shadow: 0 0 0.4em #8F7;
+}
+.my-search, .my-fuzzy-search {
+  height: 30px;
+}
+
+.filter-row {
+  margin-top: 8px;
+  margin-bottom: 5px;
+}
+
+.list-group-item {
+  padding: 5px 5px;
+  border: 1px solid #ddd;
+}
+
+.list-group {
+  margin-bottom: 10px;
+}
+
+.pagination {
+  margin: 10px 0;
+}
+
+#reviewsRow {
+  margin-top: 12px;
+  min-width: 480px;
+}
+
+#spin-target {
+  position:fixed;
+  top:50%;
+  left:50%;
+}
+
+.cell {
+  padding: 0 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.text-success {
+  color: #5CB85C;
+}
+
+.no-border {
+  border: 0;
+}
+
+.check-label {
+  position: relative;
+  margin-bottom: 0;
+  font-weight: normal;
+}
+
+.color-body {
+  background: radial-gradient(at center, #21A2E1, #123);
+}
+
+@media (min-width: 768px) {
+  .navbar .navbar-nav {
+    display: inline-block;
+    float: none;
+    vertical-align: top;
+  }
+
+  .navbar .navbar-collapse {
+    text-align: center;
+  }
+
+  .search-wrapper {
+    padding-right: 5px;
+  }
+
+  .fuzzy-wrapper {
+    padding: 0 5px;
+  }
+
+  .date-wrapper {
+    padding-left: 5px;
+  }
+}
+@media (max-width: 1100px) {
+  .navbar .navbar-nav li p,
+  .navbar .navbar-nav li a {
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 5px;
+    margin-right: 5px;
+  }
+}
+@media (max-width: 900px) {
+  .navbar .navbar-nav li p,
+  .navbar .navbar-nav li a {
+    margin-left: 2px;
+    margin-right: 2px;
+  }
+}
+
+/*covers page until everything is loaded*/
+#cover {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  top:0;
+  left: 0;
+  background: #000;
+  z-index:9999;
+}
+
+/*navbar dark theme*/
+.navbar-mine {
+  background-color: #3a3a3a;
+  border-color:  #000;
+}
+.navbar-mine .navbar-brand {
+  color: #dddddd;
+}
+.navbar-mine .navbar-brand:hover,
+.navbar-mine .navbar-brand:focus {
+  color: #ffffff;
+}
+.navbar-mine .navbar-text {
+  color: #dddddd;
+}
+.navbar-mine .navbar-nav > li > a {
+  color: #dddddd;
+}
+.navbar-mine .navbar-nav > li > a:hover,
+.navbar-mine .navbar-nav > li > a:focus {
+  color: #ffffff;
+  background-color: #606060;
+}
+.navbar-mine .navbar-nav > .active > a,
+.navbar-mine .navbar-nav > .active > a:hover,
+.navbar-mine .navbar-nav > .active > a:focus {
+  color: #ffffff;
+  background-color: #606060;
+}
+.navbar-mine .navbar-nav > .open > a,
+.navbar-mine .navbar-nav > .open > a:hover,
+.navbar-mine .navbar-nav > .open > a:focus {
+  color: #ffffff;
+  background-color: #606060;
+}
+.navbar-mine .navbar-toggle {
+  border-color:  #000;
+}
+.navbar-mine .navbar-toggle:hover,
+.navbar-mine .navbar-toggle:focus {
+  background-color: #606060;
+}
+.navbar-mine .navbar-toggle .icon-bar {
+  background-color: #dddddd;
+}
+.navbar-mine .navbar-collapse,
+.navbar-mine .navbar-form {
+  border-color: #000;
+}
+.navbar-mine .navbar-link {
+  color: #dddddd;
+}
+.navbar-mine .navbar-link:hover {
+  color: #ffffff;
+}
+
+.navbar-mine .li a:focus {
+  background-color: black;
+}
+
+@media (max-width: 767px) {
+  .navbar-mine .navbar-nav .open .dropdown-menu > li > a {
+    color: #dddddd;
+  }
+  .navbar-mine .navbar-nav .open .dropdown-menu > li > a:hover,
+  .navbar-mine .navbar-nav .open .dropdown-menu > li > a:focus {
+    color: #ffffff;
+  }
+  .navbar-mine .navbar-nav .open .dropdown-menu > .active > a,
+  .navbar-mine .navbar-nav .open .dropdown-menu > .active > a:hover,
+  .navbar-mine .navbar-nav .open .dropdown-menu > .active > a:focus {
+    color: #ffffff;
+    background-color: #606060;
+  }
+}
+
+.form-control:focus {
+    border-color: rgba(31, 144, 200, 0.9);
+    box-shadow: 0 1px 1px rgba(31, 144, 200, 0.8) inset, 0 0 8px rgba(31, 144, 200, 0.6);
+    outline: 0 none !important;
+}

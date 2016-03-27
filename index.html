@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html class="no-js" lang="">
+  <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title></title>
+      <meta name="description" content="Udacity Review Polling Assigner">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+
+      <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+
+      <link rel="stylesheet" href="css/bootstrap.min.css">
+      <style>
+          body {
+              padding-top: 50px;
+              padding-bottom: 20px;
+          }
+      </style>
+      <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+      <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700" rel="stylesheet" type="text/css">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+      <link rel="stylesheet" href="css/titatoggle-dist.css">
+      <link rel="stylesheet" href="css/main.css">
+      <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
+  </head>
+  <body>
+  <!-- Static navbar -->
+  <nav class="navbar navbar-mine navbar-fixed-top">
+    <div class="container-fluid">
+
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="javascript:;">Review Viewer</a>
+      </div>
+
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+          <li class="dropdown hide">
+            <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="statCurReviews stat"></span> <span class="caret"></span></a>
+            <ul class="dropdown-menu curReviewsDD"></ul>
+          </li>
+          <li><p class="navbar-text statTotalAssigned stat"></p></li>
+          <li><p class="navbar-text statTotalRequests stat"></p></li>
+          <li><p class="navbar-text statTimeActive stat"></p></li>
+          <li><p class="navbar-text statTimeStarted stat"></p></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="javascript:;" class="toggleQueue hide help" data-placement="auto bottom" data-toggle="popover" data-content="Refresh data from Udacity" data-trigger="hover"><i class="fa fa-lg fa-play"></i></a></li>
+          <li><a href="javascript:;" class="refreshData hide help" data-placement="auto bottom" data-toggle="popover" data-content="Refresh data from Udacity" data-trigger="hover"><i class="fa fa-lg fa-refresh"></i></a></li>
+          <li><a href="javascript:;" class="exportCSV hide help" data-placement="auto bottom" data-toggle="popover" data-content="Export data to a CSV to use in Excel, Google Sheets, etc." data-trigger="hover"><i class="fa fa-lg fa-file-excel-o"></i></a></li>
+          <li><a href="javascript:;" class="exportJSON hide help" data-placement="auto bottom" data-toggle="popover" data-content="Export data as a .json file" data-trigger="hover"><i class="fa fa-lg fa-file-text-o"></i></a></li>
+          <li><a href="javascript:;" class="copyCode help" data-placement="auto bottom" data-toggle="popover" data-content="Copy helper code to your clipboard for pasting into the Udacity review dashboard console (won't work in safari or old browsers)" data-trigger="hover"><i class="fa fa-lg fa-clipboard"></i></a></li>
+          <li><a href="https://github.com/simplydallas/udacityreviewparser/blob/gh-pages/readme.md" target="_blank" class="readMe help" data-placement="auto bottom" data-toggle="popover" data-content="Readme file (with step by step instructions)" data-trigger="hover"><i class="fa fa-lg fa-question"></i></a></li>
+          <li><a href="javascript:;" class="toggleTheme help" data-placement="auto bottom" data-toggle="popover" data-content="Toggle page theme on/off" data-trigger="hover"><i class="fa fa-lg fa-paint-brush"></i></a></li>
+        </ul>
+
+      </div><!--/.nav-collapse -->
+    </div>
+  </nav>
+
+
+  <div class="jumbotron">
+    <div class="container">
+      <div id="alert1" class="alert alert-danger hide">
+        <strong>OOPS!</strong> The tool failed to recognize your input as a proper JSON formatted input from Udacity.  Make sure you followed the instructions in the readme and try again.
+      </div>
+      <div id="alert2" class="alert alert-danger hide">
+        <strong>OOPS!</strong> The tool failed to get usable JSON from localstorage.  Try pasting new data in from Udacity.
+      </div>
+      <div id="alert3" class="alert alert-danger hide">
+        <strong>OOPS!</strong> The tool failed to get usable JSON from Udacity based on your token.  Try checking your token and trying again.
+      </div>
+
+      <h3>Paste your token in this box then hit enter:</h3>
+      <textarea id="tokenInput" class="form-control"></textarea>
+      <hr>
+      <div class="text-center">
+        <button id="lastData" class="btn btn-lg btn-primary hide">Load locally stored list<span class="hidden-xs"> from last refresh</span></button>
+        <button id="lastToken" class="btn btn-lg btn-primary hide">Continue with the token<span class="hidden-xs"> you last used</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row hide reviewsRow">
+      <div id="reviews">
+        <div class="row filter-row">
+          <div class="col-sm-6 search-wrapper">
+            <input class="my-search form-control" placeholder="Strict Search" />
+          </div>
+          <div class="col-sm-6 fuzzy-wrapper">
+            <input class="my-fuzzy-search form-control" placeholder="Fuzzy Search" />
+          </div>
+        </div>
+        <div class="row button-row">
+          <div class="col-sm-12 col-xs-12 button-wrapper">
+            <button class="sort btn btn-sm btn-primary col-sm-1 col-xs-1" data-sort="project_id">
+              <span class="hidden-xs">Project </span>ID
+            </button>
+            <button class="sort btn btn-sm btn-primary col-sm-5 col-xs-5" data-sort="name">
+              <span class="hidden-xs">Project </span>Name
+            </button>
+             <button class="sort btn btn-sm btn-primary col-sm-2 col-xs-2" data-sort="status">
+              <span class="hidden-xs">Certified </span>Status
+            </button>
+             <button class="sort btn btn-sm btn-primary col-sm-2 col-xs-2" data-sort="active">
+              <span class="hidden-xs">Currently </span>Active
+            </button>
+             <button class="sort btn btn-sm btn-primary col-sm-2 col-xs-2" data-sort="queue">
+              <span class="hidden-xs">Queue </span>This?
+            </button>
+          </div>
+        </div>
+        <ul class="list list-unstyled list-group text-center" id="main-list"></ul>
+        <ul class="pagination"></ul>
+      </div>
+    </div>
+  </div> <!-- end container -->
+
+  <!-- begin modal -->
+  <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="detailModalLabel">Review Details</h4>
+        </div>
+        <div class="modal-body">
+          <ul class="modal-list list list-unstyled list-group">
+            <li>stuff</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div> <!-- end modal -->
+
+  <div id="cover"></div> <!-- covers page until loaded -->
+
+  <!-- target for ajax loading spinner for centering-->
+  <div id="spin-target"></div>
+
+</html>
+      <script src="js/vendor/jquery-1.11.2.min.js"></script>
+      <script src="js/vendor/bootstrap.min.js"></script>
+      <script src="js/vendor/moment.min.js"></script>
+      <script src="js/vendor/list.js"></script>
+      <script src="js/vendor/list.pagination.min.mod.js"></script>
+      <script src="js/vendor/list.fuzzysearch.min.js"></script>
+      <script src="js/vendor/marked.min.js"></script>
+      <script src="js/vendor/spin.min.js"></script>
+      <script src="js/export.js"></script>
+      <script src="js/main.js"></script>
+  </body>
+</html>
