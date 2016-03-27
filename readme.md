@@ -67,6 +67,7 @@
 * The code needs a lot of cleanup.
 * Better error handling for unknown errors, auth errors, etc. are needed.
 * Options to be alerted need to be improved.
+* modal is ugly on some projects due to overflow
 
 ### Possible enhancements (feel free to pull requests these or anything else you find useful and we will discuss it)
 

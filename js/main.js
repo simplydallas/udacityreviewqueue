@@ -113,41 +113,21 @@ var parseVals = function(vals) {
   debug("parse vals triggered");
   var ret = JSON.parse(JSON.stringify(vals));
   myGlobal.stats.reviewCount += ret.length; //total reviews
-  ret.forEach(function(review){
+  ret.forEach(function(project){
 
-    review.checkcert = (review.status === "certified");
+    project.checkcert = (project.status === "certified");
     var qp = myGlobal.queueProjects;
-    if (!review.checkcert || !qp.hasOwnProperty(review.project_id)) {
-      qp[review.project_id] = review.checkcert;
+    if (!project.checkcert || !qp.hasOwnProperty(project.project_id)) {
+      qp[project.project_id] = project.checkcert;
     }
 
-    review.initstate = qp[review.project_id];
+    project.initstate = qp[project.project_id];
 
-    //linkify id
-    review.link = "https://review.udacity.com/#!/reviews/" + review.id;
     //pull the project name to the top level
-    review.name = review.project.name;
-    review.nanodegree = review.project.nanodegree_key + ': ' +
-                        review.project.hashtag.split(',')[1];
-    review.earned = numToMoney(+review.price);
-    //if completed_at is missing, use created_at instead
-    //TODO: consider a gener date helper function with multiple fallbacks
-    if (moment(review.completed_at,moment.ISO_8601,true).isValid()) {
-      review.completedDate = moment(review.completed_at).format("L");
-    }
-    else {
-      review.completedDate = moment(review.created_at).format("L");
-    }
-    //date stuff
-    var dateAssn = moment(review.assigned_at);
-    var dateComp = moment(review.completed_at);
-    var tempDur = moment.duration(dateComp.diff(dateAssn));
-
-    review.duration = "Time to finish: " + pad(tempDur.hours()) + ":" +
-                      pad(tempDur.minutes()) + ":" + pad(tempDur.seconds());
-    review.rawDur = tempDur;
-
-    // parseReviewStats(review);
+    project.name = project.project.name;
+    project.nanodegree = project.project.nanodegree_key + ': ' +
+                        project.project.hashtag.split(',')[1];
+    project.money = numToMoney(+project.project.price);
 
   });
 
@@ -217,62 +197,37 @@ function assignedCheck(token) {
   debug("Assigned Check triggered");
   token = token || curToken();
 
-
-  $.ajax({method: 'GET',
-      url: 'https://review-api.udacity.com/api/v1/me/submissions/assigned.json',
-      headers: { Authorization: token }
-  })
-  .done(function(data){
-    debug(data);
-
-    myGlobal.stats.assigned = data.map(function(proj) {
-      return proj.id;
+  if(myGlobal.queueActive || myGlobal.stats.assigned.length) {
+    myGlobal.stats.queueRequests += 1;
+    $.ajax({method: 'GET',
+        url: 'https://review-api.udacity.com/api/v1/me/submissions/assigned.json',
+        headers: { Authorization: token }
     })
-  })
-  .fail(function(error){
-    //TODO, actually handle this fail
-  })
-  .always(function(){
-    if(myGlobal.updateStats) {
-      myGlobal.assignedCheckTimeout = setTimeout(function(){
-        assignedCheck(token);
-      }, 30000)
-    }
-  })
+    .done(function(data){
+      debug(data);
 
+      myGlobal.stats.assigned = data.map(function(proj) {
+        return proj.id;
+      })
+    })
+    .fail(function(error){
+      //TODO, actually handle this fail
+    })
+    .always(function(){
+      if(myGlobal.updateStats) {
+        myGlobal.assignedCheckTimeout = setTimeout(function(){
+          assignedCheck(token);
+        }, 30000)
+      }
+    })
+  }
+  else {
+    //keep looping even though we don't pull ajax
+    myGlobal.assignedCheckTimeout = setTimeout(function(){
+      assignedCheck(token);
+    }, 30000)    
+  }
   debug("Assigned Check ended");
-}
-
-/**
- * ajax helper for a single project assignment attempt
- * @param  {number} projId the project id we are attempting to assign
- * @param  {string} token  auth token to use with request
- * @return {promise}       a jquery promise
- */
-function assignAttempt(projId, token) {
-  token = token || curToken();
-
-  var deff = jQuery.Deferred();
-  debug(projId)
-  myGlobal.stats.queueRequests += 1;
-  myGlobal.lastRequestTime = moment();
-  $.ajax({method: 'POST',
-      url: 'https://review-api.udacity.com/api/v1/projects/' +
-              projId + '/submissions/assign.json',
-      headers: { Authorization: token }
-  })
-  .done(function(data){
-    debug(data);
-    myGlobal.stats.assignedTotal += 1;
-    deff.resolve({result: "assigned", info: data.id});
-  })
-  .fail(function(error){
-    debug(error);
-    var errInfo = myGlobal.errorCodes[error.status] || "unknown";
-    deff.resolve({result: "error", info: errInfo});
-  });
-
-  return deff.promise();
 }
 
 function startQueue() {
@@ -432,6 +387,56 @@ function handleData(dataStr) {
 }
 
 /**
+ * Get JSON from a token using a CORS proxy
+ * @param  {string} token user auth token from Udacity
+ */
+function handleToken(token) {
+  debug("Handle Token triggered");
+  startSpin(200);
+
+  saveToken(token);
+
+  $.ajax({method: 'GET',
+    url: 'https://review-api.udacity.com/api/v1/me/certifications.json',
+    headers: { Authorization: token }
+  })
+  .done(function(data){
+    debug(data);
+
+    //clear out any existing searches for the new data
+    $('.my-fuzzy-search').val('');
+    $('.my-search').val('');
+
+    var resJSON = JSON.stringify(data);
+    if(isJson(resJSON)) {
+      saveData(resJSON);
+
+      if(userList.size()) {
+        userList.clear();
+      }
+      userList.filter();
+      handleData(resJSON);
+      debug('filters cleared');
+      stopSpin();
+    }
+    else {
+      $('#alert1').removeClass('hide');
+      //TODO, decide if this should be permanently removed or not
+      // deleteToken();
+      // $('#lastToken').addClass('hide');
+    }
+  })
+  .fail(function(error){
+    stopSpin();
+    $('#alert3').removeClass('hide');
+    //TODO, decide if this should be permanently removed or not
+    //deleteToken();
+    // $('#lastToken').addClass('hide');
+  });
+  debug("Handle Token ended");
+}
+
+/**
  * tooltip/popover are only initialized for currently visible
  * dom elements.  So every time we update what is visible this
  * is run again to ensure new elements have their popover
@@ -464,67 +469,44 @@ function handleModal(project_id) {
   var data = userList.get('project_id', project_id)[0].values();
   var list = $('.modal-list');
   var pre = '<li class="list-group-item">';
-  var content = pre + 'Project ID: ' + '<a target="_blank" href="' +
-                data.link + '">' + data.project_id + '</a></li>' +
+  var content = '' +
+    // pre + 'Project ID: ' + '<a target="_blank" href="' +
+    //             data.link + '">' + data.project_id + '</a></li>' +
     pre + 'Project Title: ' + data.project.name +
           ' (ID: ' + data.project_id + ')</li>' +
+    pre + 'Nanodegree: ' + data.nanodegree + '</li>' +
     pre + 'Project Status: ' + data.status +
           ' (Active: ' + data.active + ')</li>' +
     pre + 'Grader ID: ' + data.grader_id + '</li>' +
-    pre + 'Current Price: ' + data.project.price + '</li>' +
-
+    pre + 'Current Price: ' + data.money + '</li>' +
+    pre + 'Training Count: ' + data.trainings_count + '</li>' +    
     pre + 'Created: ' + moment(data.created_at).format('llll') + '</li>' +
     pre + 'Certified: ' + moment(data.certified_at).format('llll') + '</li>' +
-    pre + 'Waitlisted: ' + moment(data.waitlisted_at).format('llll') + '</li>' +
-    pre + 'Updated: ' + moment(data.updated_at).format('llll') + '</li>' +
-    pre + data.duration + '</li>';
-    if (data.repo_url) {
-      content += pre + '<a target="_blank" href="' + data.repo_url + '">Student Repo</a></li>';
-    }
-    if (data.archive_url) {
-      content += pre + '<a target="_blank" href="' + data.archive_url + '">Student Zip Archive</a></li>';
-    }
-    // Removed until I can figure out if this is a valid url still
-    // and if so, what the prefix is.
-    // if (data.zipfile.url) {
-    //   content += pre + '<a target="_blank" href="' + data.zipfile.url + '">Zip File</a></li>';
-    // }
-    if (data.rating) {
-      content += pre + 'Student Feedback Rating: ' + data.rating + '</li>';
-    }
-    if (data.feedback) {
-      content += pre + 'Student Feedback Note: ' + data.feedback + '</li>';
-    }
-    if (data.notes) {
-      content += pre + 'Student General Note: ' + marked(data.notes) + '</li>';
-    }
-    if (data.general_comment) {
-      content += pre + 'Grader General Comment: ' + marked(data.general_comment) + '</li>';
-    }
+    pre + 'Updated: ' + moment(data.updated_at).format('llll') + '</li>';
+
     //start section that is likely to be null
-    if (data.status_reason) {
-      content += pre + 'Status Reason: ' + marked(data.status_reason) + '</li>';
+    if (data.waitlisted_at) {
+      content += pre + 'Waitlisted: ' + moment(data.waitlisted_at).format('llll') + '</li>';
     }
-    if (data.result_reason) {
-      content += pre + 'Result Reason: ' + marked(data.result_reason) + '</li>';
+    if (data.project.required_skills) {
+      content += pre + 'Required Skills: ' + marked(data.project.required_skills) + '</li>';
     }
     if (data.training_id) {
       content += pre + 'Training ID: ' + data.training_id + '</li>';
     }
-    if (data.url) {
-      content += pre + 'URL: ' + data.url + '</li>';
+    if (data.project.file_filter_regex) {
+      content += pre + 'File Filter Regex: ' + data.project.file_filter_regex + '</li>';
+    }
+    if (data.project.waitlist !== undefined) {
+      content += pre + 'Waitlist: ' + data.project.waitlist + '</li>';
     }
     if (data.project.upload_types.length > 0) {
       content += pre + 'Upload Types: ' + data.project.upload_types.join(', ') + '</li>';
     }
-    if (data.previous_submission_id) {
-      content += pre + 'URL: ' + data.previous_submission_id + '</li>';
+    if (data.project.description) {
+      content += pre + 'Description: ' + marked(data.project.description) + '</li>';
     }
-    if (data.nomination) {
-      content += pre + 'URL: ' + data.nomination + '</li>';
-    }
-    // //end likely to be null section
-    // content += pre + 'Udacity Key: ' + data.udacity_key + '</li>';
+
 
   list.html(content);
   $('.modal').modal();
@@ -1019,7 +1001,7 @@ $('.toggleTheme').click(function() {
  * set to inherit event from main list since these are
  * dynamic appends
  */
-$('#main-list').on('click', '.id', function() {
+$('#main-list').on('click', '.project_id', function() {
   handleModal(this.innerHTML);
 });
 
