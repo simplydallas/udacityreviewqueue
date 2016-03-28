@@ -43,6 +43,8 @@ var myGlobal = {
   refreshDays: 30,
   //should a cors proxy be used?
   useProxy: true,
+  //sounbd file for alerts
+  snd: new Audio("sounds/gotone.mp3"),
   //prevent filter events while search is already running
   debug: false
 };
@@ -382,6 +384,7 @@ function assignAttempt(projId, token) {
     debug(data);
     myGlobal.stats.assignedTotal += 1;
     myGlobal.stats.assigned.push(data.id);
+    myGlobal.snd.play();
     deff.resolve({result: "assigned", info: data.id});
   })
   .fail(function(error){
