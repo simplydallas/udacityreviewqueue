@@ -406,6 +406,7 @@ function handleData(dataStr) {
   debug("Handle Data triggered");
   userList.add(parseVals(JSON.parse(dataStr)));
   userList.sort('project_id', { order: "asc" });
+  tour.end();
   $('.jumbotron, .copyCode').addClass('hide');
   $('.reviewsRow, .dropdown, .exportJSON, .exportCSV, .toggleQueue')
      .removeClass('hide');
@@ -419,6 +420,9 @@ function handleData(dataStr) {
   startStats();
   handleHover();
 
+  //show an instructional tour if this is the first load
+  //of this tool that makes it to this stage
+  tour2.start();
   //remove the throttle on filter updates to the navbar
   setTimeout(function(){myGlobal.stats.throttled = false;}, myGlobal.eventThrottle);
   debug("Handle Data ended");
@@ -1025,6 +1029,7 @@ $('.copyCode').click(function() {
  * click handler for the stop start button in navbar
  */
 $('.toggleQueue').click(function() {
+
   var icon = $(this).find('.fa');
   this.blur();
 
@@ -1253,10 +1258,14 @@ $(function() {
   //are done doing things that will be flashy and ugly on load
   //$('#cover').hide(400, 'opacity');
   $('#cover').fadeOut(500);
+  //show an instructional tour if this is the first load of this tool
+  tour.start();
 });
 
-  $.ajaxPrefilter(function(options) {
-      if (myGlobal.useProxy && options.crossDomain && jQuery.support.cors) {
-          options.url = 'https://corsproxy-simplydallas.rhcloud.com/' + options.url;
-      }
-  });
+//ajax cors proxy setup.  Should only be enabled if API cors headers are
+//still having issues.  Toggled via myGlobal.useProxy setting.
+$.ajaxPrefilter(function(options) {
+    if (myGlobal.useProxy && options.crossDomain && jQuery.support.cors) {
+        options.url = 'https://corsproxy-simplydallas.rhcloud.com/' + options.url;
+    }
+});
