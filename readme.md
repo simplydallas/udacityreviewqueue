@@ -78,5 +78,7 @@
 * More alerts besides just the one sound.  Possibly email, etc.
 * Much more obvious display of currently assigned projects instead of only the navbar dropdown.
 * Error/issue alert improvements
+* Turn off the queue automatically if a specific review id is detected multiple times in the off chance someone is leaving their queue on, letting projects expire, and picking them back up again automatically as they expire.
+* Slow down queue loop after a long period of inactivity or set a max time period to queue without interaction to ensure no set and forget use.
 
 -Dallas Frank
