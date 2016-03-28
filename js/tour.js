@@ -47,7 +47,7 @@ var tour2 = new Tour({
     content: "Any projects you get assigned will show up here in the dropdown. " +
     "They will show as a number and if you click the number it will take you " + 
     "directly to the review page so you can edit it.  Once you complete the " +
-    " project, it will automatically be removed form this list within 30 seconds.",
+    " project, it will automatically be removed from this list within 30 seconds.",
     placement: "right"
   },
   {
