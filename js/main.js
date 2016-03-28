@@ -42,10 +42,11 @@ var myGlobal = {
   //how many days back should a refresh (not initial load) try to grab
   refreshDays: 30,
   //should a cors proxy be used?
-  useProxy: true,
+  useProxy: false,
   //sounbd file for alerts
   snd: new Audio("sounds/gotone.mp3"),
   soundAlert: true,
+  emailAlert: false, //work in progress
   //prevent filter events while search is already running
   debug: false
 };
@@ -65,7 +66,7 @@ var options = {
              ListFuzzySearch() ],
   item: '<li class="list-group-item"><div class="row">' +
         '<div class="cell col-sm-1 col-xs-1">' +
-        '<a href="javascript:;" class="link"><span class="project_id"></span></a>' +
+        '<a href="javascript:;" class="link pulsed"><span class="project_id"></span></a>' +
         '</div><div class="cell col-sm-5 col-xs-5">' +
         '<span class="name nanodegree" data-placement="auto top" ' +
         'data-toggle="popover"' +
@@ -385,7 +386,7 @@ function assignAttempt(projId, token) {
     debug(data);
     myGlobal.stats.assignedTotal += 1;
     myGlobal.stats.assigned.push(data.id);
-    handleAlert();
+    handleAlert(); //try to handle alert such as playing a soung
     deff.resolve({result: "assigned", info: data.id});
   })
   .fail(function(error){
@@ -506,7 +507,37 @@ function handleCheck(el) {
  * Runs any set alerts.  Initially this is a sound alert only
  */
 function handleAlert() {
+  //sound alert
   if(myGlobal.soundAlert) myGlobal.snd.play();
+  //email alert
+  //TODO: finish adding ability to set email settings by user
+  //so this is actually useful
+  if(myGlobal.emailAlert && myGlobal.stats.assigned.length) {
+    var message = myGlobal.stats.assigned.map( function(id) {
+      return "https://review.udacity.com/#!/submissions/" + id;
+    }).join(' , ');
+
+    debug("email message: " + message);
+    sendEmail(message);
+  }
+}
+
+/**
+ * send an email alert via formspree.io service
+ * @param  {string} message the email message to send
+ */
+function sendEmail(message) {
+  var email = curEmail();
+  if (email.length) {
+    $.post( "https://formspree.io/" + email,
+    {
+      _subject: "review assigned by the queue tool",
+      message: "Reviews Currently Assigned"
+    },
+    function(data){
+      debug(data);
+    },"json");
+  }
 }
 
 /**
@@ -929,6 +960,31 @@ function curSound() {
   return localStorage.getItem('lastSoundToggle') || "on";
 }
 
+function saveEmail(data) {
+  localStorage.setItem('lastEmailToggle', data);
+}
+
+function deleteEmail() {
+  localStorage.removeItem('lastEmailToggle');
+}
+
+function curEmail() {
+  return localStorage.getItem('lastEmailToggle') || "on";
+}
+
+function saveEmailAddress(data) {
+  localStorage.setItem('lastEmailAddress', data);
+}
+
+function deleteEmailAddress() {
+  localStorage.removeItem('lastEmailAddress');
+}
+
+function curEmailAddress() {
+  return localStorage.getItem('lastEmailAddress') || "";
+}
+
+
 /**
  * returns an array of just project ids that should be polled for
  * based on the state object myGlobal.queueProjects
@@ -950,6 +1006,7 @@ function queueOnly() {
 /**
  * Visually flashes icons.  Used for click feedback
  * @param  {object} el jQuery or DOM element object to pulse
+ * @param  {number} delay time to keep effect in place (defaults to 200)
  */
 function pulse(el, delay) {
   delay = delay || 200;
@@ -999,29 +1056,9 @@ $('#lastToken').click(function(){
 });
 
 /**
- * click handler for the earliest date in navbar
- */
-$('.statStart').click(function() {
-  this.blur();
-  pulse($('.fromDate'));
-  $('.fromDate').datepicker('setDate', myGlobal.staticStats.startDate);
-});
-
-/**
- * click handler for the recent date in navbar
- */
-$('.statRecent').click(function() {
-  this.blur();
-  pulse($('.toDate'));
-  $('.toDate').datepicker('setDate', myGlobal.staticStats.recentDate);
-});
-
-/**
  * click handler for the helper code button in navbar
  */
 $('.copyCode').click(function() {
-  this.blur();
-  pulse($(this).find('.fa'));
   copyCodeToClipboard();
 });
 
@@ -1031,7 +1068,6 @@ $('.copyCode').click(function() {
 $('.toggleQueue').click(function() {
 
   var icon = $(this).find('.fa');
-  this.blur();
 
   if(myGlobal.queueActive) {
     stopQueue();
@@ -1044,15 +1080,12 @@ $('.toggleQueue').click(function() {
     icon.removeClass('fa-play');
   }
 
-  pulse(icon);
 });
 
 /**
  * click handler for the data refresh in navbar
  */
 $('.refreshData').click(function() {
-  this.blur();
-  pulse($(this).find('.fa'));
   refreshData();
 });
 
@@ -1060,8 +1093,6 @@ $('.refreshData').click(function() {
  * click handler for .json export in navbar
  */
 $('.exportJSON').click(function() {
-  this.blur();
-  pulse($(this).find('.fa'));
   exportJSON();
 });
 
@@ -1069,8 +1100,6 @@ $('.exportJSON').click(function() {
  * click handler for CSV export in navbar
  */
 $('.exportCSV').click(function() {
-  this.blur();
-  pulse($(this).find('.fa'));
   exportCSV();
 });
 
@@ -1078,7 +1107,6 @@ $('.exportCSV').click(function() {
  * click handler for theme toggle in navbar
  */
 $('.toggleTheme').click(function() {
-  this.blur();
   toggleTheme();
 });
 
@@ -1086,11 +1114,17 @@ $('.toggleTheme').click(function() {
  * click handler for theme toggle in navbar
  */
 $('.toggleSound').click(function() {
-  this.blur();
-  pulse($(this).find('.fa'));
   toggleSound();
 });
 
+/**
+ * click handler for objects that get a pulse visual effect
+ */
+$('body').on('click', '.pulsed', function() {
+  this.blur();
+  pulse(this);
+  pulse($(this).find('.fa'));
+});
 /**
  * click handler for id links to open modal for that id
  * set to inherit event from main list since these are
