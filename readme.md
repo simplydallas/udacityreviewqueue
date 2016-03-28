@@ -23,6 +23,7 @@
   * This will not pull fresh data from Udacity but it will let you see your last loaded data without getting it and pasting it again.
   * You will also see a button that says: `Continue with the token you last used`.  This will fetch new data from Udacity.
 7. Once the page is loaded, there will be toggle switches next to each project.  Turn them on for the ones you want to assign and off for any you want to ignore.
+  * It is worth noting that even while the queue is running you can still toggle these on and off without restarting the queue.  If you have none toggled on, no actual server request will be sent but the queue will continue checking until you turn it off.
 8. In the top right, there is a play button.  Hit this and it will start trying to gather projects for you.  It will try roughly once a second per request and you can tell which project it is currently trying to grab as it will flash green if it is currently visible on the page.
   * If you hit your max number of reviews, the queue will continue but it will only try once every minute or so until it gets a response other than one saying your queue is full.  It will the return back to once a second.
 9. In the navbar there are some stats.  The most important of these is the one that says Currentl Assigned.  If this says more than 0, you can open the dropdown and there will be a link to any currently assigned project in there that when clicked will open the review for editing (on the Udacity page)
