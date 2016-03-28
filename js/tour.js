@@ -70,7 +70,7 @@ var tour2 = new Tour({
     {
     element: ".fa-volume-up, .fa-volume-off",
     title: "Sound Alert",
-    content: "Any project that is assigned will trigger a sound alert " + 
+    content: "Any project that is assigned will trigger a sound alert.  " + 
     "Click this icon to toggle that sound on and off.  It will be remembered " +
     "between sessions.",
     placement: "bottom"
