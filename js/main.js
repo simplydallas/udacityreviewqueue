@@ -7,7 +7,7 @@ var myGlobal = {
   //hold current stats
   stats: {},
   //hold some unfiltered stats
-  staticStats: {},
+  statsCache: {},
   //timers
   timerTimeout: null,
   resizeTimeout: null,
@@ -97,6 +97,7 @@ function resetStats() {
   myGlobal.stats = {
     assigned: [],
     queueStartTime: "not active",
+    dur: '',
     queueRequests: 0,
     assignedTotal: 0
   };
@@ -156,30 +157,47 @@ function updateStats() {
     dur = moment.duration(startTime.diff(moment())).humanize();
     startTime = startTime.format('LT');
   }
-  $('.statTimeStarted').html(
+
+  myGlobal.stats.dur = dur;
+
+  if(hasChanged("queueStartTime")) {
+    $('.statTimeStarted').html(
     '<span class="hidden-sm">Queue </span>Start Time: ' +
     spnSt + startTime + '</span>');
+  }
 
-  $('.statTimeActive').html(
-    '<span class="hidden-sm">Queue </span>Time Active: ' +
-    spnSt + dur + '</span>');
-  $('.statTotalAssigned').html('Total Assigned: ' + spnSt +
-    numWithComs(myGlobal.stats.assignedTotal) + '</span>');
-  $('.statTotalRequests').html(
-    'Total <span class="hidden-sm">Server </span>Requests: ' +
-    spnSt + numWithComs(myGlobal.stats.queueRequests) + '</span>');
-  $('.statCurReviews').html('<span class="hidden-sm">Currently </span>Assigned: ' +
-    spnSt + myGlobal.stats.assigned.length + '</span>');
+  if(hasChanged("dur")) {
+    debug("update time active stat triggered");
+    $('.statTimeActive').html(
+      '<span class="hidden-sm">Queue </span>Time Active: ' +
+      spnSt + dur + '</span>');
+  }
+  if(hasChanged("assignedTotal")) {
+    $('.statTotalAssigned').html('Total Assigned: ' + spnSt +
+      numWithComs(myGlobal.stats.assignedTotal) + '</span>');
+  }
+  if(hasChanged("queueRequests")) {
+    $('.statTotalRequests').html(
+      'Total <span class="hidden-sm">Server </span>Requests: ' +
+      spnSt + numWithComs(myGlobal.stats.queueRequests) + '</span>');
+  }
+  if(hasChanged("assigned")) {
+    debug("update assigned stats triggered");
+    $('.statCurReviews').html('<span class="hidden-sm">Currently </span>Assigned: ' +
+      spnSt + myGlobal.stats.assigned.length + '</span>');
+    var projStr = '';
+    var projPre = '<li><a href="https://review.udacity.com/#!/submissions/';
+    var projSuf1 = '" target="_blank">';
+    var projSuf2 = '</a></li>';
+    myGlobal.stats.assigned.forEach(function(project) {
+      //earned stuff
+      projStr += projPre + project + projSuf1 + project + projSuf2;
+    });
+    $('.curReviewsDD').html(projStr);
+  }
 
-  var projStr = '';
-  var projPre = '<li><a href="https://review.udacity.com/#!/submissions/';
-  var projSuf1 = '" target="_blank">';
-  var projSuf2 = '</a></li>';
-  myGlobal.stats.assigned.forEach(function(project) {
-    //earned stuff
-    projStr += projPre + project + projSuf1 + project + projSuf2;
-  });
-  $('.curReviewsDD').html(projStr);
+  //update our cache
+  myGlobal.statsCache = JSON.parse(JSON.stringify(myGlobal.stats));
 
   //keep firing this unless the setting for it is disabled
   if (myGlobal.updateStats) {
@@ -187,6 +205,21 @@ function updateStats() {
   }
 
   debug("Update Stats ended");
+}
+
+/**
+ * check if the current stat is different than the cached version
+ * This is used to cut down on the number of unecessary dom manipulations
+ * @param  {string} statStr the name of a stat to compare against the cache
+ * @return {Boolean} if the stats has changed since last cached
+ */
+function hasChanged(statStr) {
+  var now = JSON.stringify(myGlobal.stats[statStr]);
+  var then = JSON.stringify(myGlobal.statsCache[statStr]);
+  if (now !== then) {
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -225,7 +258,7 @@ function assignedCheck(token) {
     //keep looping even though we don't pull ajax
     myGlobal.assignedCheckTimeout = setTimeout(function(){
       assignedCheck(token);
-    }, 30000)    
+    }, 30000)
   }
   debug("Assigned Check ended");
 }
@@ -348,6 +381,7 @@ function assignAttempt(projId, token) {
   .done(function(data){
     debug(data);
     myGlobal.stats.assignedTotal += 1;
+    myGlobal.stats.assigned.push(data.id);
     deff.resolve({result: "assigned", info: data.id});
   })
   .fail(function(error){
@@ -479,7 +513,7 @@ function handleModal(project_id) {
           ' (Active: ' + data.active + ')</li>' +
     pre + 'Grader ID: ' + data.grader_id + '</li>' +
     pre + 'Current Price: ' + data.money + '</li>' +
-    pre + 'Training Count: ' + data.trainings_count + '</li>' +    
+    pre + 'Training Count: ' + data.trainings_count + '</li>' +
     pre + 'Created: ' + moment(data.created_at).format('llll') + '</li>' +
     pre + 'Certified: ' + moment(data.certified_at).format('llll') + '</li>' +
     pre + 'Updated: ' + moment(data.updated_at).format('llll') + '</li>';
