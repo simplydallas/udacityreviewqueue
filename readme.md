@@ -31,6 +31,10 @@
 
 * The default theme can be toggled off to show a mostly white layout similar to the default Udacity or Bootstrap theme.  Just click the little paintbrush in the top right.  It will remember your preference for next time.
 
+### Sound
+
+* The default is on.  There is a sound that will play when any project is assigned form the queue by the tool.  The volume icon in the navbar top right can toggle this sound off.  Your preference is remembered for next time.
+
 ### The following information is presented
 
 * Project id
@@ -71,7 +75,8 @@
 
 ### Possible enhancements (feel free to pull requests these or anything else you find useful and we will discuss it)
 
-* Possibly change result column to feedback with result hover instead of the other way around once more than 30 days of history is enabled for feedback (supposed to be next week).
-
+* More alerts besides just the one sound.  Possibly email, etc.
+* Much more obvious display of currently assigned projects instead of only the navbar dropdown.
+* Error/issue alert improvements
 
 -Dallas Frank
