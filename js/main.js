@@ -45,6 +45,7 @@ var myGlobal = {
   useProxy: true,
   //sounbd file for alerts
   snd: new Audio("sounds/gotone.mp3"),
+  soundAlert: true,
   //prevent filter events while search is already running
   debug: false
 };
@@ -384,7 +385,7 @@ function assignAttempt(projId, token) {
     debug(data);
     myGlobal.stats.assignedTotal += 1;
     myGlobal.stats.assigned.push(data.id);
-    myGlobal.snd.play();
+    handleAlert();
     deff.resolve({result: "assigned", info: data.id});
   })
   .fail(function(error){
@@ -495,6 +496,13 @@ function handleCheck(el) {
   var project_id = +$(el).closest('.row').find('.project_id').html()
   myGlobal.queueProjects[project_id] = el.checked;
   saveQueueProjects(JSON.stringify(myGlobal.queueProjects));
+}
+
+/**
+ * Runs any set alerts.  Initially this is a sound alert only
+ */
+function handleAlert() {
+  if(myGlobal.soundAlert) myGlobal.snd.play();
 }
 
 /**
@@ -694,7 +702,7 @@ function toggleTheme(firstLoad) {
 }
 
 /**
- * disable custom darker page theme
+ * enable custom darker page theme
  */
 function themeOn() {
   $('body').addClass('color-body');
@@ -709,6 +717,36 @@ function themeOff() {
   $('body').removeClass('color-body');
   var nav = $('.navbar-mine, .navbar-default');
   nav.removeClass('navbar-mine').addClass('navbar-default');
+}
+
+/**
+ * Enables and disables custom darker page theme
+ */
+function toggleSound(firstLoad) {
+  var soundState = curSound();
+  if(!firstLoad) {
+    soundState = (soundState === "on") ? "off" : "on";
+    saveSound(soundState);
+  }
+  soundState === "on" ? soundOn() : soundOff();
+}
+
+/**
+ * enable sound alert
+ */
+function soundOn() {
+  $('.toggleSound').find('.fa').addClass('fa-volume-up').removeClass('fa-volume-off');
+  myGlobal.soundAlert = true;
+}
+
+/**
+ * disable sound alert
+ */
+function soundOff() {
+  $('.toggleSound').find('.fa').addClass('fa-volume-off').removeClass('fa-volume-up');
+  myGlobal.soundAlert = false;
+  myGlobal.snd.pause();
+  myGlobal.snd.currentTime = 0;
 }
 
 /**
@@ -875,6 +913,18 @@ function curQueueProjects() {
   return JSON.parse(curQueueProjectsStr()  || '{}');
 }
 
+function saveSound(data) {
+  localStorage.setItem('lastSoundToggle', data);
+}
+
+function deleteSound() {
+  localStorage.removeItem('lastSoundToggle');
+}
+
+function curSound() {
+  return localStorage.getItem('lastSoundToggle') || "on";
+}
+
 /**
  * returns an array of just project ids that should be polled for
  * based on the state object myGlobal.queueProjects
@@ -1025,6 +1075,15 @@ $('.exportCSV').click(function() {
 $('.toggleTheme').click(function() {
   this.blur();
   toggleTheme();
+});
+
+/**
+ * click handler for theme toggle in navbar
+ */
+$('.toggleSound').click(function() {
+  this.blur();
+  pulse($(this).find('.fa'));
+  toggleSound();
 });
 
 /**
@@ -1179,6 +1238,7 @@ userList.on('pageChangeComplete', handleHover);
  */
 $(function() {
   toggleTheme(true); //set theme off if it was off on last load
+  toggleSound(true); //set sound off if it was off on last load
   var oldData = curDataStr();
   if (oldData !== '') {
     $('#lastData').removeClass('hide');
