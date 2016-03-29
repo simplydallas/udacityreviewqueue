@@ -280,6 +280,7 @@ function stopQueue() {
   myGlobal.queueActive = false;
   myGlobal.stats.queueStartTime = "not active";
   clearTimeout(myGlobal.queueTimeout);
+  myGlobal.lastSeenFull = false;
 }
 
 function startStats() {
@@ -293,16 +294,8 @@ function stopStats() {
   clearTimeout(myGlobal.statTimeOut)
   clearTimeout(myGlobal.assignedCheckTimeout)
 }
-/**
- * Loop to attempt to assign projects using auth token
- * @param  {string} token user auth token from Udacity
- */
-function runQueue(i, token) {
-  debug("Run Queue triggered");
-  token = token || curToken();
 
-  var arr = queueOnly();
-  var token = curToken();
+function getDelay() {
   var delayOffset = moment().diff(myGlobal.lastRequestTime);
   var delay = Math.max(0, myGlobal.requestDelaySecs * 1000 - delayOffset);
 
@@ -312,54 +305,78 @@ function runQueue(i, token) {
     delay = myGlobal.requestDelaySecsFull * 1000;
   };
 
+  return delay;
+
+}
+
+/**
+ * Loop to attempt to assign projects using auth token
+ * @param  {string} token user auth token from Udacity
+ */
+function runQueue(i, token) {
+  debug("Run Queue triggered");
+  token = token || curToken();
+
+  var arr = queueOnly();
+
   if (i === undefined || i >= arr.length) {
     i = 0;
   }
 
+  debug("queue index: " + i);
+
   pulse($('.project_id').filter(function() {
       return $(this).html() === arr[i];
-    }).closest('li'), Math.min(950, delay));
+    }).closest('li'), Math.min(950, getDelay()));
 
-  debug(i);
-  myGlobal.queueTimeout = setTimeout(function(){
-    if(arr.length) {
-      assignAttempt(arr[i], token)
-      .done(function(res){
-        debug(res);
-        if(res.result === "error") {
-          if(res.info === "full") {
-            myGlobal.lastSeenFull = true;
-          }
-          else if (res.info === "no auth" || res.info === "unknown") {
-            //TODO: make an auth alert for the user
-            //turn off the queue since we either
-            //have a bad token or an unknown issue
-            myGlobal.queueActive = false;
-          }
+  if(arr.length) {
+    assignAttempt(arr[i], token)
+    .done(function(res){
+      debug(res);
+      if(res.result === "error") {
+        if(res.info === "full") {
+          myGlobal.lastSeenFull = true;
         }
         else {
-          //TODO: put the review grabbed logic here
-          console.log("booya ", res.info)
+          myGlobal.lastSeenFull = false;
         }
+        if (res.info === "no auth" || res.info === "unknown") {
+          //TODO: make an auth alert for the user
+          //turn off the queue since we either
+          //have a bad token or an unknown issue
+          stopQueue();            
+        }
+      }
+      else {
+        myGlobal.stats.assignedTotal += 1;
+        myGlobal.stats.assigned.push(data.id);
+        handleAlert(); //try to handle alert such as playing a sound
+        
+        //this could check against a known max here to prevent one more
+        //server hit but then it would not be dynamic if Udacity
+        //changes their max queue size, which is no good
+        myGlobal.lastSeenFull = false;
+      }
 
-        //start queue again with the next index
-        //if the queue is still active
-        if(myGlobal.queueActive) {
+      //start queue again with the next index
+      //if the queue is still active
+      if(myGlobal.queueActive) {
+        myGlobal.queueTimeout = setTimeout(function(){
           runQueue(i += 1, token);
-        }
-        else {
-          debug("queue halted");
-        }
-      })
-    }
-    else {
-      //keep looping even if nothign is selected
-      //so that the queue keeps going if things are
-      //ticked off and on during the loop
-      myGlobal.lastRequestTime = moment();
-      runQueue(i);
-    }
-  }, delay)
+        }, getDelay());
+      }
+      else {
+        debug("queue halted");
+      }
+    })
+  }
+  else {
+    //keep looping even if nothign is selected
+    //so that the queue keeps going if things are
+    //ticked off and on during the loop
+    myGlobal.lastRequestTime = moment();
+    runQueue(i);
+  }
 
   debug("Run Queue ended");
 }
@@ -384,9 +401,6 @@ function assignAttempt(projId, token) {
   })
   .done(function(data){
     debug(data);
-    myGlobal.stats.assignedTotal += 1;
-    myGlobal.stats.assigned.push(data.id);
-    handleAlert(); //try to handle alert such as playing a soung
     deff.resolve({result: "assigned", info: data.id});
   })
   .fail(function(error){
@@ -522,6 +536,11 @@ function handleAlert() {
   }
 }
 
+/**
+ * sound helper that will play a sound object after attempting
+ * to stop any existing play of that sound currently active
+ * @param  {sound object} snd the sound to play / replay
+ */
 function soundAlert(snd) {
   //stop it before starting in case it is played twice
   //could overlap two sounds but that can get ugly sounding
