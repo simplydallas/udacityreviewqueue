@@ -22,7 +22,12 @@ var myGlobal = {
   requestDelaySecs: 1,
   requestDelaySecsFull: 60,
   lastRequestTime: moment(),
-  errorCodes: {404: "not found", 400: "full", 422: "full", 401: "no auth"},
+  errorCodes: {
+    404: "not found",
+    400: "full",
+    422: "full",
+    401: "no auth"
+  },
   //hold ajax spinner
   spinner: new Spinner(),
   //prevent rapid events in case an event loop sneaks in
@@ -56,36 +61,45 @@ var myGlobal = {
  * for the list itself when parsing in items from Udacity data
  */
 var options = {
-  valueNames: [ 'project_id',
-                { name: 'nanodegree', attr: 'data-content'},
-                { name: 'checkcert', attr: 'data-cert'},
-                { name: 'initstate', attr: 'data-init'},
-                'name', 'status', 'money', ],
+  valueNames: ['project_id', {
+      name: 'nanodegree',
+      attr: 'data-content'
+    }, {
+      name: 'checkcert',
+      attr: 'data-cert'
+    }, {
+      name: 'initstate',
+      attr: 'data-init'
+    },
+    'name', 'status', 'money',
+  ],
   page: 5,
-  plugins: [ ListPagination({outerWindow: 1}),
-             ListFuzzySearch() ],
+  plugins: [ListPagination({
+      outerWindow: 1
+    }),
+    ListFuzzySearch()
+  ],
   item: '<li class="list-group-item"><div class="row">' +
-        '<div class="cell col-sm-1 col-xs-1">' +
-        '<a href="javascript:;" class="link pulsed"><span class="project_id"></span></a>' +
-        '</div><div class="cell col-sm-5 col-xs-5">' +
-        '<span class="name nanodegree" data-placement="auto top" ' +
-        'data-toggle="popover"' +
-        'data-trigger="hover"></span>' +
-        '</div><div class="cell col-sm-2 col-xs-2">' +
-        '<span class="status"></span>' +
-        '</div><div class="cell col-sm-2 col-xs-2">' +
-        '<span class="money" data-placement="auto top" ' +
-        'data-toggle="popover"' +
-        'data-trigger="hover"></span>' +
-        '</div><div class="cell checkbox-slider--a-rounded col-sm-2 col-xs-2">' +
-        '<label class="check-label">' +
-          '<input class="checkcert initstate" type="checkbox" checked><span></span>' +
-        '</label>' +
-        '<span class="queue"></span>' +
-        '</div></div>' +
-        '</li>'
+    '<div class="cell col-sm-1 col-xs-1">' +
+    '<a href="javascript:;" class="link pulsed"><span class="project_id"></span></a>' +
+    '</div><div class="cell col-sm-5 col-xs-5">' +
+    '<span class="name nanodegree" data-placement="auto top" ' +
+    'data-toggle="popover"' +
+    'data-trigger="hover"></span>' +
+    '</div><div class="cell col-sm-2 col-xs-2">' +
+    '<span class="status"></span>' +
+    '</div><div class="cell col-sm-2 col-xs-2">' +
+    '<span class="money" data-placement="auto top" ' +
+    'data-toggle="popover"' +
+    'data-trigger="hover"></span>' +
+    '</div><div class="cell checkbox-slider--a-rounded col-sm-2 col-xs-2">' +
+    '<label class="check-label">' +
+    '<input class="checkcert initstate" type="checkbox" checked><span></span>' +
+    '</label>' +
+    '<span class="queue"></span>' +
+    '</div></div>' +
+    '</li>'
 };
-
 
 //Instantiate the listjs list
 var userList = new List('reviews', options, '');
@@ -118,7 +132,7 @@ var parseVals = function(vals) {
   debug("parse vals triggered");
   var ret = JSON.parse(JSON.stringify(vals));
   myGlobal.stats.reviewCount += ret.length; //total reviews
-  ret.forEach(function(project){
+  ret.forEach(function(project) {
 
     project.checkcert = (project.status === "certified");
     var qp = myGlobal.queueProjects;
@@ -131,7 +145,7 @@ var parseVals = function(vals) {
     //pull the project name to the top level
     project.name = project.project.name;
     project.nanodegree = project.project.nanodegree_key + ': ' +
-                        project.project.hashtag.split(',')[1];
+      project.project.hashtag.split(',')[1];
     project.money = numToMoney(+project.project.price);
 
   });
@@ -145,15 +159,15 @@ var parseVals = function(vals) {
   return ret;
 };
 
-
 /**
  * update the various navbar dom elements with stat information
  */
 function updateStats() {
   debug("update stats triggered");
   var spnSt = '<span class="text-success">';
-  var spanSt2 = '<span class="text-success notes" data-placement="auto bottom" ' +
-        'data-toggle="popover" data-trigger="hover" data-content="';
+  var spanSt2 =
+    '<span class="text-success notes" data-placement="auto bottom" ' +
+    'data-toggle="popover" data-trigger="hover" data-content="';
 
   var startTime = myGlobal.stats.queueStartTime;
   var dur = startTime;
@@ -164,30 +178,31 @@ function updateStats() {
 
   myGlobal.stats.dur = dur;
 
-  if(hasChanged("queueStartTime")) {
+  if (hasChanged("queueStartTime")) {
     $('.statTimeStarted').html(
-    '<span class="hidden-sm">Queue </span>Start Time: ' +
-    spnSt + startTime + '</span>');
+      '<span class="hidden-sm">Queue </span>Start Time: ' +
+      spnSt + startTime + '</span>');
   }
 
-  if(hasChanged("dur")) {
+  if (hasChanged("dur")) {
     debug("update time active stat triggered");
     $('.statTimeActive').html(
       '<span class="hidden-sm">Queue </span>Time Active: ' +
       spnSt + dur + '</span>');
   }
-  if(hasChanged("assignedTotal")) {
+  if (hasChanged("assignedTotal")) {
     $('.statTotalAssigned').html('Total Assigned: ' + spnSt +
       numWithComs(myGlobal.stats.assignedTotal) + '</span>');
   }
-  if(hasChanged("queueRequests")) {
+  if (hasChanged("queueRequests")) {
     $('.statTotalRequests').html(
       'Total <span class="hidden-sm">Server </span>Requests: ' +
       spnSt + numWithComs(myGlobal.stats.queueRequests) + '</span>');
   }
-  if(hasChanged("assigned")) {
+  if (hasChanged("assigned")) {
     debug("update assigned stats triggered");
-    $('.statCurReviews').html('<span class="hidden-sm">Currently </span>Assigned: ' +
+    $('.statCurReviews').html(
+      '<span class="hidden-sm">Currently </span>Assigned: ' +
       spnSt + myGlobal.stats.assigned.length + '</span>');
     var projStr = '';
     var projPre = '<li><a href="https://review.udacity.com/#!/submissions/';
@@ -234,35 +249,37 @@ function assignedCheck(token) {
   debug("Assigned Check triggered");
   token = token || curToken();
 
-  if(myGlobal.queueActive || myGlobal.stats.assigned.length) {
+  if (myGlobal.queueActive || myGlobal.stats.assigned.length) {
     myGlobal.stats.queueRequests += 1;
-    $.ajax({method: 'GET',
+    $.ajax({
+        method: 'GET',
         url: 'https://review-api.udacity.com/api/v1/me/submissions/assigned.json',
-        headers: { Authorization: token }
-    })
-    .done(function(data){
-      debug(data);
-
-      myGlobal.stats.assigned = data.map(function(proj) {
-        return proj.id;
+        headers: {
+          Authorization: token
+        }
       })
-    })
-    .fail(function(error){
-      //TODO, actually handle this fail
-    })
-    .always(function(){
-      if(myGlobal.updateStats) {
-        myGlobal.assignedCheckTimeout = setTimeout(function(){
-          assignedCheck(token);
-        }, 30000)
-      }
-    })
-  }
-  else {
+      .done(function(data) {
+        debug(data);
+
+        myGlobal.stats.assigned = data.map(function(proj) {
+          return proj.id;
+        });
+      })
+      .fail(function(error) {
+        //TODO, actually handle this fail
+      })
+      .always(function() {
+        if (myGlobal.updateStats) {
+          myGlobal.assignedCheckTimeout = setTimeout(function() {
+            assignedCheck(token);
+          }, 30000);
+        }
+      });
+  } else {
     //keep looping even though we don't pull ajax
-    myGlobal.assignedCheckTimeout = setTimeout(function(){
+    myGlobal.assignedCheckTimeout = setTimeout(function() {
       assignedCheck(token);
-    }, 30000)
+    }, 30000);
   }
   debug("Assigned Check ended");
 }
@@ -279,7 +296,7 @@ function startQueue() {
 
 function stopQueue() {
   $('.toggleQueue').find('.fa').addClass('fa-play').removeClass('fa-pause');
-  
+
   debug("queue stopped");
   myGlobal.queueActive = false;
   myGlobal.stats.queueStartTime = "not active";
@@ -295,8 +312,8 @@ function startStats() {
 
 function stopStats() {
   myGlobal.updateStats = false;
-  clearTimeout(myGlobal.statTimeOut)
-  clearTimeout(myGlobal.assignedCheckTimeout)
+  clearTimeout(myGlobal.statTimeOut);
+  clearTimeout(myGlobal.assignedCheckTimeout);
 }
 
 function getDelay() {
@@ -307,7 +324,7 @@ function getDelay() {
   //a full project log assigned to ease off the server a bit
   if (myGlobal.lastSeenFull) {
     delay = myGlobal.requestDelaySecsFull * 1000;
-  };
+  }
 
   return delay;
 
@@ -330,53 +347,49 @@ function runQueue(i, token) {
   debug("queue index: " + i);
 
   pulse($('.project_id').filter(function() {
-      return $(this).html() === arr[i];
-    }).closest('li'), 950);
+    return $(this).html() === arr[i];
+  }).closest('li'), 950);
   // TODO: remove this if testing shows set timer looks fine
   // Math.min(950, getDelay()));
 
-  if(arr.length) {
+  if (arr.length) {
     assignAttempt(arr[i], token)
-    .done(function(res){
-      debug(res);
-      if(res.result === "error") {
-        if(res.info === "full") {
-          myGlobal.lastSeenFull = true;
-        }
-        else {
+      .done(function(res) {
+        debug(res);
+        if (res.result === "error") {
+          if (res.info === "full") {
+            myGlobal.lastSeenFull = true;
+          } else {
+            myGlobal.lastSeenFull = false;
+          }
+          if (res.info === "no auth" || res.info === "unknown") {
+            //TODO: make an auth alert for the user
+            //turn off the queue since we either
+            //have a bad token or an unknown issue
+            stopQueue();
+          }
+        } else {
+          myGlobal.stats.assignedTotal += 1;
+          myGlobal.stats.assigned.push(data.id);
+          handleAlert(); //try to handle alert such as playing a sound
+
+          //this could check against a known max here to prevent one more
+          //server hit but then it would not be dynamic if Udacity
+          //changes their max queue size, which is no good
           myGlobal.lastSeenFull = false;
         }
-        if (res.info === "no auth" || res.info === "unknown") {
-          //TODO: make an auth alert for the user
-          //turn off the queue since we either
-          //have a bad token or an unknown issue
-          stopQueue();            
-        }
-      }
-      else {
-        myGlobal.stats.assignedTotal += 1;
-        myGlobal.stats.assigned.push(data.id);
-        handleAlert(); //try to handle alert such as playing a sound
-        
-        //this could check against a known max here to prevent one more
-        //server hit but then it would not be dynamic if Udacity
-        //changes their max queue size, which is no good
-        myGlobal.lastSeenFull = false;
-      }
 
-      //start queue again with the next index
-      //if the queue is still active
-      if(myGlobal.queueActive) {
-        myGlobal.queueTimeout = setTimeout(function(){
-          runQueue(i += 1, token);
-        }, getDelay());
-      }
-      else {
-        debug("queue halted");
-      }
-    })
-  }
-  else {
+        //start queue again with the next index
+        //if the queue is still active
+        if (myGlobal.queueActive) {
+          myGlobal.queueTimeout = setTimeout(function() {
+            runQueue(i += 1, token);
+          }, getDelay());
+        } else {
+          debug("queue halted");
+        }
+      });
+  } else {
     //keep looping even if nothign is selected
     //so that the queue keeps going if things are
     //ticked off and on during the loop
@@ -397,23 +410,32 @@ function assignAttempt(projId, token) {
   token = token || curToken();
 
   var deff = jQuery.Deferred();
-  debug(projId)
+  debug(projId);
   myGlobal.stats.queueRequests += 1;
   myGlobal.lastRequestTime = moment();
-  $.ajax({method: 'POST',
+  $.ajax({
+      method: 'POST',
       url: 'https://review-api.udacity.com/api/v1/projects/' +
-              projId + '/submissions/assign.json',
-      headers: { Authorization: token }
-  })
-  .done(function(data){
-    debug(data);
-    deff.resolve({result: "assigned", info: data.id});
-  })
-  .fail(function(error){
-    debug(error);
-    var errInfo = myGlobal.errorCodes[error.status] || "unknown";
-    deff.resolve({result: "error", info: errInfo});
-  });
+        projId + '/submissions/assign.json',
+      headers: {
+        Authorization: token
+      }
+    })
+    .done(function(data) {
+      debug(data);
+      deff.resolve({
+        result: "assigned",
+        info: data.id
+      });
+    })
+    .fail(function(error) {
+      debug(error);
+      var errInfo = myGlobal.errorCodes[error.status] || "unknown";
+      deff.resolve({
+        result: "error",
+        info: errInfo
+      });
+    });
 
   return deff.promise();
 }
@@ -426,11 +448,13 @@ function assignAttempt(projId, token) {
 function handleData(dataStr) {
   debug("Handle Data triggered");
   userList.add(parseVals(JSON.parse(dataStr)));
-  userList.sort('project_id', { order: "asc" });
+  userList.sort('project_id', {
+    order: "asc"
+  });
   tour.end();
   $('.jumbotron, .copyCode').addClass('hide');
   $('.reviewsRow, .dropdown, .exportJSON, .exportCSV, .toggleQueue')
-     .removeClass('hide');
+    .removeClass('hide');
   $('.navbar-brand').addClass('visible-xs');
   $('.search').focus();
   if (curToken() !== '') $('.refreshData').removeClass('hide');
@@ -445,7 +469,9 @@ function handleData(dataStr) {
   //of this tool that makes it to this stage
   tour2.start();
   //remove the throttle on filter updates to the navbar
-  setTimeout(function(){myGlobal.stats.throttled = false;}, myGlobal.eventThrottle);
+  setTimeout(function() {
+    myGlobal.stats.throttled = false;
+  }, myGlobal.eventThrottle);
   debug("Handle Data ended");
 }
 
@@ -459,43 +485,45 @@ function handleToken(token) {
 
   saveToken(token);
 
-  $.ajax({method: 'GET',
-    url: 'https://review-api.udacity.com/api/v1/me/certifications.json',
-    headers: { Authorization: token }
-  })
-  .done(function(data){
-    debug(data);
-
-    //clear out any existing searches for the new data
-    $('.my-fuzzy-search').val('');
-    $('.my-search').val('');
-
-    var resJSON = JSON.stringify(data);
-    if(isJson(resJSON)) {
-      saveData(resJSON);
-
-      if(userList.size()) {
-        userList.clear();
+  $.ajax({
+      method: 'GET',
+      url: 'https://review-api.udacity.com/api/v1/me/certifications.json',
+      headers: {
+        Authorization: token
       }
-      userList.filter();
-      handleData(resJSON);
-      debug('filters cleared');
+    })
+    .done(function(data) {
+      debug(data);
+
+      //clear out any existing searches for the new data
+      $('.my-fuzzy-search').val('');
+      $('.my-search').val('');
+
+      var resJSON = JSON.stringify(data);
+      if (isJson(resJSON)) {
+        saveData(resJSON);
+
+        if (userList.size()) {
+          userList.clear();
+        }
+        userList.filter();
+        handleData(resJSON);
+        debug('filters cleared');
+        stopSpin();
+      } else {
+        $('#alert1').removeClass('hide');
+        //TODO, decide if this should be permanently removed or not
+        // deleteToken();
+        // $('#lastToken').addClass('hide');
+      }
+    })
+    .fail(function(error) {
       stopSpin();
-    }
-    else {
-      $('#alert1').removeClass('hide');
+      $('#alert3').removeClass('hide');
       //TODO, decide if this should be permanently removed or not
-      // deleteToken();
+      //deleteToken();
       // $('#lastToken').addClass('hide');
-    }
-  })
-  .fail(function(error){
-    stopSpin();
-    $('#alert3').removeClass('hide');
-    //TODO, decide if this should be permanently removed or not
-    //deleteToken();
-    // $('#lastToken').addClass('hide');
-  });
+    });
   debug("Handle Token ended");
 }
 
@@ -508,17 +536,21 @@ function handleHover() {
   debug("Handle Hover triggered");
   $('.popover').remove(); //be sure no popovers are stuck open
   $('.nanodegree:not([data-content="null"],[data-content=""])')
-  .popover({container: 'body'}).addClass('hoverable');
-  $('.duration').popover({container: 'body'}).addClass('hoverable');
+    .popover({
+      container: 'body'
+    }).addClass('hoverable');
+  $('.duration').popover({
+    container: 'body'
+  }).addClass('hoverable');
   debug("Handle Hover ended");
-  $('.checkcert:not([data-cert="true"]').prop( "checked", false ).prop( "disabled", true );
-  $('.checkcert:not([data-init="true"]').prop( "checked", false );
+  $('.checkcert:not([data-cert="true"]').prop("checked", false).prop(
+    "disabled", true);
+  $('.checkcert:not([data-init="true"]').prop("checked", false);
 }
-
 
 function handleCheck(el) {
   el.setAttribute("data-init", "" + el.checked);
-  var project_id = +$(el).closest('.row').find('.project_id').html()
+  var project_id = +$(el).closest('.row').find('.project_id').html();
   myGlobal.queueProjects[project_id] = el.checked;
   saveQueueProjects(JSON.stringify(myGlobal.queueProjects));
 }
@@ -528,12 +560,12 @@ function handleCheck(el) {
  */
 function handleAlert() {
   //sound alert
-  if(myGlobal.soundAlert) soundAlert(myGlobal.snd);
+  if (myGlobal.soundAlert) soundAlert(myGlobal.snd);
   //email alert
   //TODO: finish adding ability to set email settings by user
   //so this is actually useful
-  if(myGlobal.emailAlert && myGlobal.stats.assigned.length) {
-    var message = myGlobal.stats.assigned.map( function(id) {
+  if (myGlobal.emailAlert && myGlobal.stats.assigned.length) {
+    var message = myGlobal.stats.assigned.map(function(id) {
       return "https://review.udacity.com/#!/submissions/" + id;
     }).join(' , ');
 
@@ -562,14 +594,13 @@ function soundAlert(snd) {
 function sendEmail(message) {
   var email = curEmail();
   if (email.length) {
-    $.post( "https://formspree.io/" + email,
-    {
-      _subject: "review assigned by the queue tool",
-      message: "Reviews Currently Assigned"
-    },
-    function(data){
-      debug(data);
-    },"json");
+    $.post("https://formspree.io/" + email, {
+        _subject: "review assigned by the queue tool",
+        message: "Reviews Currently Assigned"
+      },
+      function(data) {
+        debug(data);
+      }, "json");
   }
 }
 
@@ -586,10 +617,10 @@ function handleModal(project_id) {
     // pre + 'Project ID: ' + '<a target="_blank" href="' +
     //             data.link + '">' + data.project_id + '</a></li>' +
     pre + 'Project Title: ' + data.project.name +
-          ' (ID: ' + data.project_id + ')</li>' +
+    ' (ID: ' + data.project_id + ')</li>' +
     pre + 'Nanodegree: ' + data.nanodegree + '</li>' +
     pre + 'Project Status: ' + data.status +
-          ' (Active: ' + data.active + ')</li>' +
+    ' (Active: ' + data.active + ')</li>' +
     pre + 'Grader ID: ' + data.grader_id + '</li>' +
     pre + 'Current Price: ' + data.money + '</li>' +
     pre + 'Training Count: ' + data.trainings_count + '</li>' +
@@ -597,28 +628,33 @@ function handleModal(project_id) {
     pre + 'Certified: ' + moment(data.certified_at).format('llll') + '</li>' +
     pre + 'Updated: ' + moment(data.updated_at).format('llll') + '</li>';
 
-    //start section that is likely to be null
-    if (data.waitlisted_at) {
-      content += pre + 'Waitlisted: ' + moment(data.waitlisted_at).format('llll') + '</li>';
-    }
-    if (data.project.required_skills) {
-      content += pre + 'Required Skills: ' + marked(data.project.required_skills) + '</li>';
-    }
-    if (data.training_id) {
-      content += pre + 'Training ID: ' + data.training_id + '</li>';
-    }
-    if (data.project.file_filter_regex) {
-      content += pre + 'File Filter Regex: ' + data.project.file_filter_regex + '</li>';
-    }
-    if (data.project.waitlist !== undefined) {
-      content += pre + 'Waitlist: ' + data.project.waitlist + '</li>';
-    }
-    if (data.project.upload_types.length > 0) {
-      content += pre + 'Upload Types: ' + data.project.upload_types.join(', ') + '</li>';
-    }
-    if (data.project.description) {
-      content += pre + 'Description: ' + marked(data.project.description) + '</li>';
-    }
+  //start section that is likely to be null
+  if (data.waitlisted_at) {
+    content += pre + 'Waitlisted: ' + moment(data.waitlisted_at).format(
+      'llll') + '</li>';
+  }
+  if (data.project.required_skills) {
+    content += pre + 'Required Skills: ' + marked(data.project.required_skills) +
+      '</li>';
+  }
+  if (data.training_id) {
+    content += pre + 'Training ID: ' + data.training_id + '</li>';
+  }
+  if (data.project.file_filter_regex) {
+    content += pre + 'File Filter Regex: ' + data.project.file_filter_regex +
+      '</li>';
+  }
+  if (data.project.waitlist !== undefined) {
+    content += pre + 'Waitlist: ' + data.project.waitlist + '</li>';
+  }
+  if (data.project.upload_types.length > 0) {
+    content += pre + 'Upload Types: ' + data.project.upload_types.join(', ') +
+      '</li>';
+  }
+  if (data.project.description) {
+    content += pre + 'Description: ' + marked(data.project.description) +
+      '</li>';
+  }
 
 
   list.html(content);
@@ -626,20 +662,19 @@ function handleModal(project_id) {
   debug("Handle Modal ended");
 }
 
-
 /**
  * initialize the datepicker for date filtering and add an event listener
  */
 function initDatePicker() {
   debug("init date picker triggered");
   $('.input-daterange').datepicker({
-      //this will get local date format pattern from moment
-      todayBtn: "linked",
-      format: moment.localeData().longDateFormat('l').toLowerCase(),
-      todayHighlight: true,
-      autoclose: true
+    //this will get local date format pattern from moment
+    todayBtn: "linked",
+    format: moment.localeData().longDateFormat('l').toLowerCase(),
+    todayHighlight: true,
+    autoclose: true
   }).on('changeDate', function(e) {
-      if(myGlobal.datePickerEnabled) filterListDates();
+    if (myGlobal.datePickerEnabled) filterListDates();
   });
   debug("init date picker ended");
 }
@@ -671,7 +706,7 @@ function updateDatePicker() {
 /**
  * Filters the review history list based on dates in the datepicker
  */
-function filterListDates(){
+function filterListDates() {
   debug("date filter triggered");
   myGlobal.datePickerActive = true;
   var f = moment($('.fromDate').datepicker('getDate')).subtract(1, 'day');
@@ -692,17 +727,17 @@ function copyCodeToClipboard() {
 
   //this works by adding a hidden element, copying from that
   //and then removing the element when done.  Clunky but silent.
-    var aux = document.createElement("textarea");
+  var aux = document.createElement("textarea");
 
-    aux.cols = "400";
-    aux.rows = "10";
+  aux.cols = "400";
+  aux.rows = "10";
 
-    aux.value = "copy(JSON.parse(localStorage.currentUser).token)";
+  aux.value = "copy(JSON.parse(localStorage.currentUser).token)";
 
-    document.body.appendChild(aux);
-    aux.select();
-    document.execCommand("copy");
-    document.body.removeChild(aux);
+  document.body.appendChild(aux);
+  aux.select();
+  document.execCommand("copy");
+  document.body.removeChild(aux);
 }
 
 /**
@@ -714,16 +749,14 @@ function refreshData() {
     var oldToken = curToken();
     if (oldToken !== '') {
       handleToken(oldToken, true);
-    }
-    else{
+    } else {
       debug('Handling Data as no token found on refresh');
       var oldData = curDataStr();
       if (oldData !== '') {
         userList.clear();
         resetStats();
         handleData(oldData);
-      }
-      else {
+      } else {
         window.alert("No valid token or data found in localStorage!");
       }
     }
@@ -737,14 +770,14 @@ function refreshData() {
  * @param  {number} delay number of milliseconds to delay before spinning
  */
 function startSpin(delay) {
-    myGlobal.loadingNow = true;
+  myGlobal.loadingNow = true;
 
-    if (myGlobal.spinner == undefined ) {
-        myGlobal.spinner = new Spinner();
-    }
-    myGlobal.timerTimeout = setTimeout(function() {
-        myGlobal.spinner.spin(document.getElementById('spin-target'));
-    }, delay);
+  if (myGlobal.spinner === undefined) {
+    myGlobal.spinner = new Spinner();
+  }
+  myGlobal.timerTimeout = setTimeout(function() {
+    myGlobal.spinner.spin(document.getElementById('spin-target'));
+  }, delay);
 }
 
 /**
@@ -752,9 +785,9 @@ function startSpin(delay) {
  * Also restores clicking actions on input boxes/buttons
  */
 function stopSpin() {
-    clearTimeout(myGlobal.timerTimeout);
-    myGlobal.spinner.stop();
-    myGlobal.loadingNow = false;
+  clearTimeout(myGlobal.timerTimeout);
+  myGlobal.spinner.stop();
+  myGlobal.loadingNow = false;
 }
 
 /**
@@ -762,7 +795,7 @@ function stopSpin() {
  */
 function toggleTheme(firstLoad) {
   var themeState = localStorage.getItem('themeState') || "on";
-  if(!firstLoad) {
+  if (!firstLoad) {
     themeState = (themeState === "on") ? "off" : "on";
     localStorage.setItem('themeState', themeState);
   }
@@ -792,7 +825,7 @@ function themeOff() {
  */
 function toggleSound(firstLoad) {
   var soundState = curSound();
-  if(!firstLoad) {
+  if (!firstLoad) {
     soundState = (soundState === "on") ? "off" : "on";
     saveSound(soundState);
   }
@@ -803,7 +836,8 @@ function toggleSound(firstLoad) {
  * enable sound alert
  */
 function soundOn() {
-  $('.toggleSound').find('.fa').addClass('fa-volume-up').removeClass('fa-volume-off');
+  $('.toggleSound').find('.fa').addClass('fa-volume-up').removeClass(
+    'fa-volume-off');
   myGlobal.soundAlert = true;
 }
 
@@ -811,7 +845,8 @@ function soundOn() {
  * disable sound alert
  */
 function soundOff() {
-  $('.toggleSound').find('.fa').addClass('fa-volume-off').removeClass('fa-volume-up');
+  $('.toggleSound').find('.fa').addClass('fa-volume-off').removeClass(
+    'fa-volume-up');
   myGlobal.soundAlert = false;
   myGlobal.snd.pause();
   myGlobal.snd.currentTime = 0;
@@ -830,17 +865,17 @@ function getPageSize() {
   var filterSize = $('.filter-row').outerHeight(true);
   var buttonSize = $('.button-row').outerHeight(true);
   var pageSize = $('.pagination').outerHeight(true);
-  var navSize = $('.navbar-header').outerHeight(true) || $('#navbar').outerHeight(true);
+  var navSize = $('.navbar-header').outerHeight(true) || $('#navbar').outerHeight(
+    true);
   var listMargins = 22;
   var wiggleRoom = 25;
 
   var baseSize = filterSize + buttonSize + pageSize +
-                 navSize + listMargins + wiggleRoom;
+    navSize + listMargins + wiggleRoom;
 
   var rawNum = (window.innerHeight - baseSize) / itemSize;
-  return Math.max(rawNum, 5)  //show 5 items or more always
+  return Math.max(rawNum, 5); //show 5 items or more always
 }
-
 
 /**
  * convert a number to monetary format with $ and commas
@@ -849,8 +884,8 @@ function getPageSize() {
  * @return {string}   [string in format of $1,000.00]
  */
 function numToMoney(num) {
-    num = Math.round(num*100)/100;
-    return '$' + numWithComs(num);
+  num = Math.round(num * 100) / 100;
+  return '$' + numWithComs(num);
 }
 
 /**
@@ -869,10 +904,9 @@ function numWithComs(num) {
  * @param  {array} arr  array to look for a string in
  * @return {boolean}
  */
-function nameInArr(name, arr)
-{
-    var test = findNameInArr(name, arr);
-    return (test.length > 0);
+function nameInArr(name, arr) {
+  var test = findNameInArr(name, arr);
+  return (test.length > 0);
 }
 
 /**
@@ -883,37 +917,9 @@ function nameInArr(name, arr)
  * @return {object} object containing the name or a 0 length object
  */
 function findNameInArr(name, arr) {
-  return $.grep(arr, function(e){ return e.name == name; });
-}
-
-/**
- * Takes existing review data and merges in newer data
- * Any old review is overwritten and any new review is appended
- * @param  {object} oldData existing review data
- * @param  {object} newData newer review data from refresh
- * @return {object} merged review data
- */
-function mergeData(oldData, newData) {
-  var oData = JSON.parse(JSON.stringify(oldData));
-  var nData = JSON.parse(JSON.stringify(newData));
-
-  //make a lookup helper to facilitate the merge
-  var lookup = {};
-  for (var i = 0, len = oData.length; i < len; i++) {
-      lookup[oData[i].id] = oData[i];
-  }
-  //loop through new data and either replace or append to old data
-  for (var i = 0, len = nData.length; i < len; i++) {
-       var newReview = nData[i];
-       var oldReview = lookup[newReview.id];
-       if (oldReview !== undefined) {
-        oldReview = newReview
-       }
-       else {
-        oData.push(newReview);
-       }
-  }
-  return oData;
+  return $.grep(arr, function(e) {
+    return e.name == name;
+  });
 }
 
 /**
@@ -922,23 +928,23 @@ function mergeData(oldData, newData) {
  * @return {Boolean}
  */
 function isJson(item) {
-    item = typeof item !== "string" ?
-        JSON.stringify(item) :
-        item;
+  item = typeof item !== "string" ?
+    JSON.stringify(item) :
+    item;
 
-    try {
-        item = JSON.parse(item);
-    } catch (e) {
-        return false;
-    }
-
-    if (typeof item === "object" && item !== null) {
-      if (item[0].project_id !== undefined) {
-        return true;
-      }
-    }
-
+  try {
+    item = JSON.parse(item);
+  } catch (e) {
     return false;
+  }
+
+  if (typeof item === "object" && item !== null) {
+    if (item[0].project_id !== undefined) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function saveToken(token) {
@@ -978,7 +984,7 @@ function curQueueProjectsStr() {
 }
 
 function curQueueProjects() {
-  return JSON.parse(curQueueProjectsStr()  || '{}');
+  return JSON.parse(curQueueProjectsStr() || '{}');
 }
 
 function saveSound(data) {
@@ -1017,7 +1023,6 @@ function curEmailAddress() {
   return localStorage.getItem('lastEmailAddress') || "";
 }
 
-
 /**
  * returns an array of just project ids that should be polled for
  * based on the state object myGlobal.queueProjects
@@ -1045,9 +1050,9 @@ function pulse(el, delay) {
   delay = delay || 200;
   if (!el.jquery) el = $(el);
   el.addClass('pulse');
-  setTimeout(function(){
+  setTimeout(function() {
     el.removeClass('pulse');
-    }, delay)
+  }, delay);
 }
 
 /**
@@ -1065,13 +1070,12 @@ function debug(message) {
  * click handler for the button that loads previously saved
  * user data from localStorage
  */
-$('#lastData').click(function(){
+$('#lastData').click(function() {
   if (!myGlobal.loadingNow) {
     var oldData = curDataStr();
     if (isJson(oldData)) {
       handleData(oldData);
-    }
-    else {
+    } else {
       $('#alert2').removeClass('hide');
     }
   }
@@ -1081,7 +1085,7 @@ $('#lastData').click(function(){
  * click handler for the button that loads previously saved
  * user data from localStorage
  */
-$('#lastToken').click(function(){
+$('#lastToken').click(function() {
   if (!myGlobal.loadingNow) {
     var oldToken = curToken();
     handleToken(oldToken);
@@ -1099,10 +1103,9 @@ $('.copyCode').click(function() {
  * click handler for the stop start button in navbar
  */
 $('.toggleQueue').click(function() {
-  if(myGlobal.queueActive) {
+  if (myGlobal.queueActive) {
     stopQueue();
-  }
-  else {
+  } else {
     startQueue();
   }
 });
@@ -1174,11 +1177,11 @@ $('#main-list').on('propertychange click', '.checkcert', function() {
  * to specific fields only and throttle input
  */
 $('.my-search').on('propertychange input', function() {
-  if(!myGlobal.loadingNow) {
+  if (!myGlobal.loadingNow) {
     $('.my-fuzzy-search').val('');
     clearTimeout(myGlobal.searchTimeout);
     //use 200ms timer to check when active typing has ended
-    myGlobal.searchTimeout = setTimeout(function(){
+    myGlobal.searchTimeout = setTimeout(function() {
       var filterArr = ['id', 'name', 'status', 'active'];
       userList.search($('.my-search').val(), filterArr);
     }, myGlobal.searchThrottle);
@@ -1191,13 +1194,14 @@ $('.my-search').on('propertychange input', function() {
  */
 $('.my-fuzzy-search').on('propertychange input', function() {
 
-  if(!myGlobal.loadingNow) {
+  if (!myGlobal.loadingNow) {
     $('.my-search').val('');
     clearTimeout(myGlobal.searchTimeout);
     //use 200ms timer to check when active typing has ended
-    myGlobal.searchTimeout = setTimeout(function(){
+    myGlobal.searchTimeout = setTimeout(function() {
       var filterArr = ['id', 'name', 'status', 'active'];
-      userList.fuzzySearch.search($('.my-fuzzy-search').val(), filterArr);
+      userList.fuzzySearch.search($('.my-fuzzy-search').val(),
+        filterArr);
     }, myGlobal.searchThrottle);
   }
 });
@@ -1207,19 +1211,18 @@ $('.my-fuzzy-search').on('propertychange input', function() {
  * that is used to input JSON data as text from Udacity
  */
 $('#jsonInput').keypress(function(event) {
-    // Check the keyCode and if the user pressed Enter (code = 13)
-    if (event.keyCode == 13 && !myGlobal.loadingNow) {
-      if(isJson(this.value)) {
-        //store this data in case we want to reload it
-        saveData(this.value);
-        handleData(this.value);
-        this.value = '';
-      }
-      else {
-        this.value = '';
-        $('#alert1').removeClass('hide');
-      }
+  // Check the keyCode and if the user pressed Enter (code = 13)
+  if (event.keyCode == 13 && !myGlobal.loadingNow) {
+    if (isJson(this.value)) {
+      //store this data in case we want to reload it
+      saveData(this.value);
+      handleData(this.value);
+      this.value = '';
+    } else {
+      this.value = '';
+      $('#alert1').removeClass('hide');
     }
+  }
 });
 
 /**
@@ -1227,19 +1230,22 @@ $('#jsonInput').keypress(function(event) {
  * that is used to input api auth token as text from Udacity
  */
 $('#tokenInput').keypress(function(event) {
-    // Check the keyCode and if the user pressed Enter (code = 13)
-    if (event.keyCode == 13 && !myGlobal.loadingNow) {
-      handleToken(this.value);
-      this.value = '';
-    }
+  // Check the keyCode and if the user pressed Enter (code = 13)
+  if (event.keyCode == 13 && !myGlobal.loadingNow) {
+    handleToken(this.value);
+    this.value = '';
+  }
 });
 
 /**
  * initialize popover for navbar buttons here so they are only done once
  */
-$('.help').popover({container: 'body'});
-$('.refreshData').popover({container: 'body'});
-
+$('.help').popover({
+  container: 'body'
+});
+$('.refreshData').popover({
+  container: 'body'
+});
 
 /**
  * pad a number to ensure it is 2 digits.
@@ -1255,12 +1261,12 @@ function pad(str) {
  * window resize event so that we can adjust list item number per
  * page to fit any size window within reason
  */
-window.onresize = function(){
+window.onresize = function() {
   clearTimeout(myGlobal.resizeTimeout);
   //prevent scrollbar on resize and restore after resize ends
   $('html, body').css('overflow-y', 'hidden');
   //use timer to check when active resizing has ended
-  myGlobal.resizeTimeout = setTimeout(function(){
+  myGlobal.resizeTimeout = setTimeout(function() {
     $('html, body').css('overflow-y', 'visible');
     var oldPageSize = userList.page;
     var newPageSize = getPageSize();
@@ -1271,28 +1277,9 @@ window.onresize = function(){
   }, myGlobal.sizeThrottle);
 };
 
-// /**
-//  * userList events that fire on list changes
-//  * Uses a shared throttle to avoid rapid duplicate events
-//  */
-// userList.on('searchComplete', function() {
-//   if (!myGlobal.listUpdateActive && !myGlobal.loadingNow) {
-//     myGlobal.listUpdateActive = true;
-//     listUpdate('search');
-//     myGlobal.listUpdateActive = false;
-//   }
-// });
-// userList.on('filterComplete', function() {
-//   if (!myGlobal.listUpdateActive && !myGlobal.loadingNow) {
-//     myGlobal.listUpdateActive = true;
-//     listUpdate('filter');
-//     myGlobal.listUpdateActive = false;
-//   }
-// });
 //below events are not throttled
 userList.on('sortComplete', handleHover);
 userList.on('pageChangeComplete', handleHover);
-
 
 /******** end click and event handlers ********/
 
@@ -1324,7 +1311,7 @@ $(function() {
 //ajax cors proxy setup.  Should only be enabled if API cors headers are
 //still having issues.  Toggled via myGlobal.useProxy setting.
 $.ajaxPrefilter(function(options) {
-    if (myGlobal.useProxy && options.crossDomain && jQuery.support.cors) {
-        options.url = 'https://corsproxy-simplydallas.rhcloud.com/' + options.url;
-    }
+  if (myGlobal.useProxy && options.crossDomain && jQuery.support.cors) {
+    options.url = 'https://corsproxy-simplydallas.rhcloud.com/' + options.url;
+  }
 });
