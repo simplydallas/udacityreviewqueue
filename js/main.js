@@ -331,7 +331,9 @@ function runQueue(i, token) {
 
   pulse($('.project_id').filter(function() {
       return $(this).html() === arr[i];
-    }).closest('li'), Math.min(950, getDelay()));
+    }).closest('li'), 950);
+  // TODO: remove this if testing shows set timer looks fine
+  // Math.min(950, getDelay()));
 
   if(arr.length) {
     assignAttempt(arr[i], token)
