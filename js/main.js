@@ -508,7 +508,7 @@ function handleCheck(el) {
  */
 function handleAlert() {
   //sound alert
-  if(myGlobal.soundAlert) myGlobal.snd.play();
+  if(myGlobal.soundAlert) soundAlert(myGlobal.snd);
   //email alert
   //TODO: finish adding ability to set email settings by user
   //so this is actually useful
@@ -520,6 +520,14 @@ function handleAlert() {
     debug("email message: " + message);
     sendEmail(message);
   }
+}
+
+function soundAlert(snd) {
+  //stop it before starting in case it is played twice
+  //could overlap two sounds but that can get ugly sounding
+  snd.pause();
+  snd.currentTime = 0;
+  snd.play();
 }
 
 /**
