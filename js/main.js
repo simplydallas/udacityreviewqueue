@@ -728,7 +728,7 @@ function stopSpin() {
  * Enables and disables custom darker page theme
  */
 function toggleTheme(firstLoad) {
-  var themeState = localStorage.getItem('themeState');
+  var themeState = localStorage.getItem('themeState') || "on";
   if(!firstLoad) {
     themeState = (themeState === "on") ? "off" : "on";
     localStorage.setItem('themeState', themeState);
