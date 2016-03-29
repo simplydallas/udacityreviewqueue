@@ -268,6 +268,8 @@ function assignedCheck(token) {
 }
 
 function startQueue() {
+  $('.toggleQueue').find('.fa').addClass('fa-pause').removeClass('fa-play');
+
   debug("queue started");
   myGlobal.queueActive = true;
   myGlobal.lastSeenFull = false;
@@ -276,6 +278,8 @@ function startQueue() {
 }
 
 function stopQueue() {
+  $('.toggleQueue').find('.fa').addClass('fa-play').removeClass('fa-pause');
+  
   debug("queue stopped");
   myGlobal.queueActive = false;
   myGlobal.stats.queueStartTime = "not active";
@@ -1093,20 +1097,12 @@ $('.copyCode').click(function() {
  * click handler for the stop start button in navbar
  */
 $('.toggleQueue').click(function() {
-
-  var icon = $(this).find('.fa');
-
   if(myGlobal.queueActive) {
     stopQueue();
-    icon.addClass('fa-play');
-    icon.removeClass('fa-pause');
   }
   else {
     startQueue();
-    icon.addClass('fa-pause');
-    icon.removeClass('fa-play');
   }
-
 });
 
 /**
