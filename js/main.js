@@ -50,6 +50,7 @@ var myGlobal = {
   useProxy: false,
   //sounbd file for alerts
   snd: new Audio("sounds/gotone.mp3"),
+  failSnd: new Audio("sounds/notgood.mp3"),
   soundAlert: true,
   emailAlert: false, //work in progress
   //prevent filter events while search is already running
@@ -368,6 +369,7 @@ function runQueue(i, token) {
             //TODO: make an auth alert for the user
             //turn off the queue since we either
             //have a bad token or an unknown issue
+            handleFailAlert();
             stopQueue();
           }
         } else {
@@ -570,6 +572,24 @@ function handleAlert() {
     var message = myGlobal.stats.assigned.map(function(id) {
       return "https://review.udacity.com/#!/submissions/" + id;
     }).join(' , ');
+
+    debug("email message: " + message);
+    sendEmail(message);
+  }
+}
+
+/**
+ * Runs any set alerts for unexpected failure.
+ */
+function handleFailAlert() {
+  //sound alert
+  if (myGlobal.soundAlert) soundAlert(myGlobal.failSnd);
+  //email alert
+  //TODO: finish adding ability to set email settings by user
+  //so this is actually useful
+  if (myGlobal.emailAlert) {
+    var message = "An unexpected error occured and your Udacity " +
+    "review queue has stopped";
 
     debug("email message: " + message);
     sendEmail(message);
