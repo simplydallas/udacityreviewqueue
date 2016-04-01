@@ -322,7 +322,9 @@ function getDelay() {
 
   //wait longer if the last time we checked we already had
   //a full project log assigned to ease off the server a bit
-  if (myGlobal.lastSeenFull) {
+  //Assume anything more than 1 project is also a reason to slow down
+  //by checking assigned length
+  if (myGlobal.lastSeenFull || myGlobal.stats.assigned.length > 1) {
     delay = myGlobal.requestDelaySecsFull * 1000;
   }
 
@@ -777,6 +779,7 @@ function startSpin(delay) {
   }
   myGlobal.timerTimeout = setTimeout(function() {
     myGlobal.spinner.spin(document.getElementById('spin-target'));
+    $('.fa-refresh').addClass('fa-spin');
   }, delay);
 }
 
@@ -788,6 +791,7 @@ function stopSpin() {
   clearTimeout(myGlobal.timerTimeout);
   myGlobal.spinner.stop();
   myGlobal.loadingNow = false;
+  $('.fa-refresh').removeClass('fa-spin');
 }
 
 /**
