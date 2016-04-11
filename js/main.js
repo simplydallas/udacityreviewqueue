@@ -97,7 +97,12 @@ var options = {
     '<label class="check-label">' +
     '<input class="checkcert initstate" type="checkbox" checked><span></span>' +
     '</label>' +
-    '<span class="queue"></span>' +
+    '<span class="queue-once hidden-xs">' +
+    '<i class="queue-once-button fa fa-lg fa-play-circle-o" ' + 
+    'data-placement="auto left" ' +
+    'data-toggle="popover"' +
+    'data-trigger="hover" data-content="Attempt 1x right now">' +
+    '</i></span>' +
     '</div></div>' +
     '</li>'
 };
@@ -404,6 +409,43 @@ function runQueue(i, token) {
   debug("Run Queue ended");
 }
 
+
+//Run just a single attempt for one project
+//for when you want to grab something but not run your queue
+function singleAttempt(id, token) {
+  debug("Single Attempt triggered");
+  token = token || curToken();
+
+  assignAttempt(id, token)
+    .done(function(res) {
+      debug(res);
+      if (res.result === "error") {
+        if (res.info === "full") {
+          myGlobal.lastSeenFull = true;
+        } else {
+          myGlobal.lastSeenFull = false;
+        }
+        if (res.info === "no auth" || res.info === "unknown") {
+          //TODO: make an auth alert for the user
+          //turn off the queue since we either
+          //have a bad token or an unknown issue
+          handleFailAlert();
+        }
+      } else {
+        myGlobal.stats.assignedTotal += 1;
+        myGlobal.stats.assigned.push(res.id);
+        handleAlert(); //try to handle alert such as playing a sound
+
+        //this could check against a known max here to prevent one more
+        //server hit but then it would not be dynamic if Udacity
+        //changes their max queue size, which is no good
+        myGlobal.lastSeenFull = false;
+      }
+    });
+
+  debug("Single Attempt ended");
+}
+
 /**
  * ajax helper for a single project assignment attempt
  * @param  {number} projId the project id we are attempting to assign
@@ -546,6 +588,9 @@ function handleHover() {
   $('.duration').popover({
     container: 'body'
   }).addClass('hoverable');
+  $('.queue-once-button').popover({
+    container: 'body'
+  }).addClass('hoverable');  
   debug("Handle Hover ended");
   $('.checkcert:not([data-cert="true"]').prop("checked", false).prop(
     "disabled", true);
@@ -1177,6 +1222,7 @@ $('body').on('click', '.pulsed', function() {
   pulse(this);
   pulse($(this).find('.fa'));
 });
+
 /**
  * click handler for id links to open modal for that id
  * set to inherit event from main list since these are
@@ -1184,6 +1230,19 @@ $('body').on('click', '.pulsed', function() {
  */
 $('#main-list').on('click', '.project_id', function() {
   handleModal(this.innerHTML);
+});
+
+/**
+ * click handler for id links to open modal for that id
+ * set to inherit event from main list since these are
+ * dynamic appends
+ */
+$('#main-list').on('click', '.queue-once', function() {
+  var id = $(this).closest('.row').find('.project_id').html()
+  //make entire row pulse
+  pulse($(this).closest('li'), 950);
+
+  singleAttempt(id);
 });
 
 /**

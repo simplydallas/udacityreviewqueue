@@ -16,6 +16,10 @@ body {
   background-attachment: fixed;
 }
 
+.queue-once {
+  padding-left: 20px;
+}
+
 .hoverable {
   font-weight: 500;
   color: #000;
