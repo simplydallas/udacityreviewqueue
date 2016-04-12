@@ -379,7 +379,7 @@ function runQueue(i, token) {
           }
         } else {
           myGlobal.stats.assignedTotal += 1;
-          myGlobal.stats.assigned.push(res.id);
+          myGlobal.stats.assigned.push(res.info);
           handleAlert(); //try to handle alert such as playing a sound
 
           //this could check against a known max here to prevent one more
