@@ -498,7 +498,7 @@ function handleData(dataStr) {
     order: "asc"
   });
   tour.end();
-  $('.jumbotron, .copyCode').addClass('hide');
+  $('.jumbotron').addClass('hide');
   $('.reviewsRow, .dropdown, .exportJSON, .exportCSV, .toggleQueue')
     .removeClass('hide');
   $('.navbar-brand').addClass('visible-xs');

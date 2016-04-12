@@ -54,12 +54,29 @@
         <ul class="nav navbar-nav navbar-right">
           <li><a href="javascript:;" class="toggleQueue hide pulsed help" data-placement="auto bottom" data-toggle="popover" data-content="Start/Stop the queue" data-trigger="hover"><i class="fa fa-lg fa-play"></i></a></li>
           <li><a href="javascript:;" class="refreshData hide pulsed help" data-placement="auto bottom" data-toggle="popover" data-content="Refresh certification data from Udacity" data-trigger="hover"><i class="fa fa-lg fa-refresh"></i></a></li>
-          <li><a href="javascript:;" class="exportCSV hide pulsed help" data-placement="auto bottom" data-toggle="popover" data-content="Export data to a CSV to use in Excel, Google Sheets, etc." data-trigger="hover"><i class="fa fa-lg fa-file-excel-o"></i></a></li>
-          <li><a href="javascript:;" class="exportJSON hide pulsed help" data-placement="auto bottom" data-toggle="popover" data-content="Export data as a .json file" data-trigger="hover"><i class="fa fa-lg fa-file-text-o"></i></a></li>
-          <li><a href="javascript:;" class="copyCode pulsed help" data-placement="auto bottom" data-toggle="popover" data-content="Copy helper code to your clipboard for pasting into the Udacity review dashboard console (won't work in safari or old browsers)" data-trigger="hover"><i class="fa fa-lg fa-clipboard"></i></a></li>
-          <li><a href="https://github.com/simplydallas/udacityreviewqueue/blob/gh-pages/readme.md" target="_blank" class="readMe pulsed help" data-placement="auto bottom" data-toggle="popover" data-content="Readme file (with step by step instructions)" data-trigger="hover"><i class="fa fa-lg fa-question"></i></a></li>
-          <li><a href="javascript:;" class="toggleSound pulsed help" data-placement="auto bottom" data-toggle="popover" data-content="Toggle sound alert on/off" data-trigger="hover"><i class="fa fa-lg fa-volume-up "></i></a></li>
-          <li><a href="javascript:;" class="toggleTheme pulsed help" data-placement="auto bottom" data-toggle="popover" data-content="Toggle page theme on/off" data-trigger="hover"><i class="fa fa-lg fa-paint-brush"></i></a></li>
+
+          <li class="dropdown hide">
+            <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="exportButton"></span><i class="fa fa-lg fa-floppy-o"></i><span class="caret"></span></a>
+            <ul class="dropdown-menu exportDD">
+              <li><a href="javascript:;" class="exportCSV hide pulsed help" data-placement="auto bottom" data-toggle="popover" data-content="Export data to a CSV to use in Excel, Google Sheets, etc." data-trigger="hover"><i class="fa fa-lg fa-file-excel-o"> CSV</i></a></li>
+              <li><a href="javascript:;" class="exportJSON hide pulsed help" data-placement="auto bottom" data-toggle="popover" data-content="Export data as a .json file" data-trigger="hover"><i class="fa fa-lg fa-file-text-o"> JSON</i></a></li>
+            </ul>
+          </li>
+
+          <li class="dropdown">
+            <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="settingsButton"></span><i class="fa fa-lg fa-cog"></i><span class="caret"></span></a>
+            <ul class="dropdown-menu settingsDD">
+              <li><a href="javascript:;" class="toggleSound pulsed help" data-placement="auto left" data-toggle="popover" data-content="Toggle sound alert on/off" data-trigger="hover"><i class="fa fa-lg fa-volume-up "> Sound</i></a></li>
+              <li><a href="javascript:;" class="toggleTheme pulsed help" data-placement="auto left" data-toggle="popover" data-content="Toggle page theme on/off" data-trigger="hover"><i class="fa fa-lg fa-paint-brush"> Theme</i></a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="settingsButton"></span><i class="fa fa-lg fa-question"></i><span class="caret"></span></a>
+            <ul class="dropdown-menu helpDD">
+              <li><a href="https://github.com/simplydallas/udacityreviewqueue/blob/gh-pages/readme.md" target="_blank" class="readMe pulsed help" data-placement="auto left" data-toggle="popover" data-content="Readme file (with step by step instructions)" data-trigger="hover"><i class="fa fa-lg fa-book"> Readme</i></a></li>
+              <li><a href="javascript:;" class="copyCode pulsed help" data-placement="auto left" data-toggle="popover" data-content="Copy helper code to your clipboard for pasting into the Udacity review dashboard console (won't work in safari or old browsers)" data-trigger="hover"><i class="fa fa-lg fa-clipboard"> Code Snippet</i></a></li>
+            </ul>
+          </li>
         </ul>
 
       </div><!--/.nav-collapse -->
