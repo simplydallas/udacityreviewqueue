@@ -13,12 +13,15 @@ var myGlobal = {
   resizeTimeout: null,
   searchTimeout: null,
   queueTimeout: null,
-  statTimeOut: null,
+  statTimeout: null,
   assignedCheckTimeout: null,
+  idleCheckTimeout: null,
+  idleTimout: null,
+  activeRecently: true,
   updateStats: true,
-
   queueActive: false,
   lastSeenFull: false,
+  idleTimeLimitMins: 240,
   requestDelaySecs: 1,
   requestDelaySecsFull: 60,
   lastRequestTime: moment(),
@@ -53,9 +56,10 @@ var myGlobal = {
   failSnd: new Audio("sounds/notgood.mp3"),
   soundAlert: true,
   emailAlert: false, //work in progress
-  //prevent filter events while search is already running
-  debug: false
+  debug: false,
+  debugVerbose: false
 };
+
 
 /**
  * options for listjs including an ugly html template to use
@@ -98,7 +102,7 @@ var options = {
     '<input class="checkcert initstate" type="checkbox" checked><span></span>' +
     '</label>' +
     '<span class="queue-once hidden-xs">' +
-    '<i class="queue-once-button fa fa-lg fa-play-circle-o" ' + 
+    '<i class="queue-once-button fa fa-lg fa-play-circle-o" ' +
     'data-placement="auto left" ' +
     'data-toggle="popover"' +
     'data-trigger="hover" data-content="Attempt 1x right now">' +
@@ -169,7 +173,7 @@ var parseVals = function(vals) {
  * update the various navbar dom elements with stat information
  */
 function updateStats() {
-  debug("update stats triggered");
+  debugVerbose("update stats triggered");
   var spnSt = '<span class="text-success">';
   var spanSt2 =
     '<span class="text-success notes" data-placement="auto bottom" ' +
@@ -226,10 +230,10 @@ function updateStats() {
 
   //keep firing this unless the setting for it is disabled
   if (myGlobal.updateStats) {
-    myGlobal.statTimeOut = setTimeout(updateStats, 1000);
+    myGlobal.statTimeout = setTimeout(updateStats, 1000);
   }
 
-  debug("Update Stats ended");
+  debugVerbose("Update Stats ended");
 }
 
 /**
@@ -291,20 +295,21 @@ function assignedCheck(token) {
 }
 
 function startQueue() {
-  $('.toggleQueue').find('.fa').addClass('fa-pause').removeClass('fa-play');
-
   debug("queue started");
   myGlobal.queueActive = true;
+  runIdleTimer(); //needs to come after queueActive = true
+  debug("idle timer started");
   myGlobal.lastSeenFull = false;
   myGlobal.stats.queueStartTime = moment();
+  $('.toggleQueue').find('.fa').addClass('fa-pause').removeClass('fa-play');
   runQueue(0);
 }
 
 function stopQueue() {
-  $('.toggleQueue').find('.fa').addClass('fa-play').removeClass('fa-pause');
-
-  debug("queue stopped");
   myGlobal.queueActive = false;
+  stopIdleTimer();
+  debug("queue stopped");
+  $('.toggleQueue').find('.fa').addClass('fa-play').removeClass('fa-pause');
   myGlobal.stats.queueStartTime = "not active";
   clearTimeout(myGlobal.queueTimeout);
   myGlobal.lastSeenFull = false;
@@ -318,7 +323,7 @@ function startStats() {
 
 function stopStats() {
   myGlobal.updateStats = false;
-  clearTimeout(myGlobal.statTimeOut);
+  clearTimeout(myGlobal.statTimeout);
   clearTimeout(myGlobal.assignedCheckTimeout);
 }
 
@@ -335,7 +340,6 @@ function getDelay() {
   }
 
   return delay;
-
 }
 
 /**
@@ -343,7 +347,7 @@ function getDelay() {
  * @param  {string} token user auth token from Udacity
  */
 function runQueue(i, token) {
-  debug("Run Queue triggered");
+  debugVerbose("Run Queue triggered");
   token = token || curToken();
 
   var arr = queueOnly();
@@ -352,18 +356,16 @@ function runQueue(i, token) {
     i = 0;
   }
 
-  debug("queue index: " + i);
+  debugVerbose("queue index: " + i);
 
   pulse($('.project_id').filter(function() {
     return $(this).html() === arr[i];
   }).closest('li'), 950);
-  // TODO: remove this if testing shows set timer looks fine
-  // Math.min(950, getDelay()));
 
   if (arr.length) {
     assignAttempt(arr[i], token)
       .done(function(res) {
-        debug(res);
+        debugVerbose(res);
         if (res.result === "error") {
           if (res.info === "full") {
             myGlobal.lastSeenFull = true;
@@ -399,14 +401,14 @@ function runQueue(i, token) {
         }
       });
   } else {
-    //keep looping even if nothign is selected
+    //keep looping even if nothing is selected
     //so that the queue keeps going if things are
     //ticked off and on during the loop
     myGlobal.lastRequestTime = moment();
     runQueue(i);
   }
 
-  debug("Run Queue ended");
+  debugVerbose("Run Queue ended");
 }
 
 
@@ -475,7 +477,7 @@ function assignAttempt(projId, token) {
       });
     })
     .fail(function(error) {
-      debug(error);
+      debugVerbose(error);
       var errInfo = myGlobal.errorCodes[error.status] || "unknown";
       deff.resolve({
         result: "error",
@@ -484,6 +486,112 @@ function assignAttempt(projId, token) {
     });
 
   return deff.promise();
+}
+
+/**
+ * event to capture user activity of any kind to facilitate an
+ * idle timeout and prevent user from accidentally or purposefully
+ * leaving this on all night or while unavailable for extended time periods
+ */
+$(window).on(
+  'click mousemove keydown scroll mousewheel touchstart',
+  function(e) {
+    if(!myGlobal.activeRecently) {
+      myGlobal.activeRecently = true;
+    }
+});
+
+/**
+ * checks every 30 seconds once started to see if we had any user
+ * activity in that time and if so and if no activity is seen
+ * in a long time it halts the queue
+ * TODO: add timeout alert
+ * @param  {boolean} keepIdleTimer if set to true the idle time will not restart
+ */
+function runIdleTimer(keepIdleTimer) {
+  debugVerbose("idle timer checked or started");
+
+  //start or reset the idle timer by default
+  if (!keepIdleTimer) {
+    myGlobal.idleTimout = setTimeout(function() {
+      if(!myGlobal.activeRecently) {
+        debug("Idle time ran out with no user input.  Queue halted.");
+        knownAlerts('idleOut');
+        stopQueue();
+      }
+    }, myGlobal.idleTimeLimitMins * 60000);
+  }
+  //check every minute to see if we had activity recently
+  myGlobal.idleCheckTimeout = setTimeout(function(){
+    if(myGlobal.activeRecently && myGlobal.queueActive) {
+      myGlobal.activeRecently = false;
+      runIdleTimer();
+    }
+    else if (myGlobal.queueActive) {
+      debug("idle check ran with no activity seen");
+      runIdleTimer(true); //keeps existing idle timer
+    }
+  }, 30000)
+}
+
+/**
+ * stop all currently running idle timers.
+ * This should be run explicitly when the queue stops
+ */
+function stopIdleTimer() {
+  debug("idle timer stopped")
+  clearTimeout(myGlobal.idleCheckTimeout);
+  clearTimeout(myGlobal.idleTimout);
+}
+
+/**
+ * add an alert to the page
+ * @param {string} message content of the alert
+ * @param {string} type    type of alert from options [success, inf, warning, danger]
+ */
+function addAlert(message, type) {
+  type = type || 'danger';
+  var alertCont = $('.alert-container');
+  alertCont.append(
+    '<div class="alert alert-' + type + '">' +
+    '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+      '<span aria-hidden="true">&times;</span>' +
+    '</button>' +
+    message +
+  '</div>');
+}
+
+/**
+ * A convenient way to shorthand adding alerts without making other functions
+ * long and ugly with string concatenation in them
+ * @param  {string} key key that matches a known alert object
+ */
+function knownAlerts(key) {
+  var savedAlerts = {
+    notJSON: {
+      message: '<strong>OOPS!</strong> The tool failed to recognize your input ' +
+               ' as a proper JSON formatted input from Udacity.  Make sure you ' +
+               ' followed the instructions in the readme and try again.',
+      type: 'danger'
+    },
+    notLocalJSON: {
+      message: '<strong>OOPS!</strong> The tool failed to get usable JSON from ' +
+               'localstorage.  Try pasting new data in from Udacity.',
+      type: 'danger'
+    },
+    notTokenJSON : {
+      message: '<strong>OOPS!</strong> The tool failed to get usable JSON from ' +
+               'Udacity based on your token.  Try checking your token and trying again.',
+      type: 'danger'
+    },
+    idleOut : {
+      message: 'You were completely idle longer than 4 hours so the queue turned itself ' + 
+               'off to minimize the impact to students in case you fell asleep or something.' +
+               'hit play to restart the queue if you still want to grab projects',
+      type: 'warning'
+    },    
+  };
+  addAlert(savedAlerts[key].message, savedAlerts[key].type);
 }
 
 /**
@@ -557,7 +665,7 @@ function handleToken(token) {
         debug('filters cleared');
         stopSpin();
       } else {
-        $('#alert1').removeClass('hide');
+        knownAlerts('savedAlerts');
         //TODO, decide if this should be permanently removed or not
         // deleteToken();
         // $('#lastToken').addClass('hide');
@@ -565,7 +673,7 @@ function handleToken(token) {
     })
     .fail(function(error) {
       stopSpin();
-      $('#alert3').removeClass('hide');
+      knownAlerts('notTokenJSON');
       //TODO, decide if this should be permanently removed or not
       //deleteToken();
       // $('#lastToken').addClass('hide');
@@ -590,13 +698,17 @@ function handleHover() {
   }).addClass('hoverable');
   $('.queue-once-button').popover({
     container: 'body'
-  }).addClass('hoverable');  
+  }).addClass('hoverable');
   debug("Handle Hover ended");
   $('.checkcert:not([data-cert="true"]').prop("checked", false).prop(
     "disabled", true);
   $('.checkcert:not([data-init="true"]').prop("checked", false);
 }
 
+/**
+ * handle clicks on checkbox elements
+ * @param  {dom element} el the element being checked
+ */
 function handleCheck(el) {
   el.setAttribute("data-init", "" + el.checked);
   var project_id = +$(el).closest('.row').find('.project_id').html();
@@ -1130,7 +1242,16 @@ function pulse(el, delay) {
  * @param  {multiple} message what should be logged to the console
  */
 function debug(message) {
-  if (myGlobal.debug) console.log(message);
+  if (myGlobal.debug || myGlobal.debugVerbose) console.log(message);
+}
+
+/**
+ * Simple debug helper so console log debugs can be left in but
+ * only trigger when a flag is on.  used for spammy debug items
+ * @param  {multiple} message what should be logged to the console
+ */
+function debugVerbose(message) {
+  if (myGlobal.debugVerbose) console.log(message);
 }
 
 /******** click and event handlers ********/
@@ -1145,7 +1266,7 @@ $('#lastData').click(function() {
     if (isJson(oldData)) {
       handleData(oldData);
     } else {
-      $('#alert2').removeClass('hide');
+      knownAlerts('notLocalJSON');
     }
   }
 });
@@ -1303,7 +1424,7 @@ $('#jsonInput').keypress(function(event) {
       this.value = '';
     } else {
       this.value = '';
-      $('#alert1').removeClass('hide');
+      knownAlerts('savedAlerts');
     }
   }
 });

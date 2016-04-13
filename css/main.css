@@ -16,6 +16,10 @@ body {
   background-attachment: fixed;
 }
 
+.alert-container .alert {
+  margin-bottom: 0;
+}
+
 .queue-once {
   padding-left: 20px;
 }
@@ -24,6 +28,13 @@ body {
   font-weight: 500;
   color: #000;
   cursor: help;
+}
+
+.alert-container {
+  position: fixed;
+  right: 0;
+  z-index: 20;
+  width: 320px;
 }
 
 .popover {
