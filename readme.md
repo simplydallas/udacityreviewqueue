@@ -30,11 +30,14 @@
 
 ### Theme
 
-* The default theme can be toggled off to show a mostly white layout similar to the default Udacity or Bootstrap theme.  Just click the little paintbrush in the top right.  It will remember your preference for next time.
+* The default theme can be toggled off to show a mostly white layout similar to the default Udacity or Bootstrap theme.  Click the settings cog in the top right and then the paintbrush.  It will remember your preference for next time.
 
 ### Sound
 
-* The default is on.  There is a sound that will play when any project is assigned form the queue by the tool.  The volume icon in the navbar top right can toggle this sound off.  Your preference is remembered for next time.
+* The default is on.  There is a sound that will play when any project is assigned form the queue by the tool.  Click the settings cog in the top right then the volume iconto toggle this setting.  This will also impact the unexpected error sound.  Your preference is remembered for next time.
+
+### Idle timer
+* User testing has shown this tool to be stable and it will usually run for days without issue if no network connectivity issues occur.  So to reduce potential impacts for students when something happens to you such as falling asleep with the queue active, there is a 4 hour timer that will stop the queue.  Every time you have any activity on the page it will restart this 4 hour timer from the beginning.  Activity includes things like scrolling, moving the mouse, clicking, typing, or touching on mobile.  If the idle timer stops the queue you can restart it by pressing the play button as usual.
 
 ### The following information is presented
 
@@ -80,6 +83,5 @@
 * Much more obvious display of currently assigned projects instead of only the navbar dropdown.
 * Error/issue alert improvements
 * Turn off the queue automatically if a specific review id is detected multiple times in the off chance someone is leaving their queue on, letting projects expire, and picking them back up again automatically as they expire.
-* Slow down queue loop after a long period of inactivity or set a max time period to queue without interaction to ensure no set and forget use.
 
 -Dallas Frank
