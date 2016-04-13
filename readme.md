@@ -72,8 +72,7 @@
 
 ### known issues and caveats
 
-* The code needs a lot of cleanup.
-* Better error handling for unknown errors, auth errors, etc. are needed.
+* The code is growing organically so it is probably hard to grok and could use some better organization.
 * Options to be alerted need to be improved.
 * modal is ugly on some projects due to overflow
 
