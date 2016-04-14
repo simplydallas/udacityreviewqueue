@@ -297,7 +297,8 @@ function assignedCheck(token) {
 function startQueue() {
   debug("queue started");
   myGlobal.queueActive = true;
-  runIdleTimer(); //needs to come after queueActive = true
+  //disabled until I can test reports that it is not lasting 4 hours
+  //runIdleTimer(); //needs to come after queueActive = true
   debug("idle timer started");
   myGlobal.lastSeenFull = false;
   myGlobal.stats.queueStartTime = moment();
@@ -927,7 +928,7 @@ function refreshData() {
   if (!myGlobal.loadingNow) {
     var oldToken = curToken();
     if (oldToken !== '') {
-      handleToken(oldToken, true);
+      handleToken(oldToken);
     } else {
       debug('Handling Data as no token found on refresh');
       var oldData = curDataStr();
