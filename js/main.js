@@ -22,7 +22,7 @@ var myGlobal = {
   queueActive: false,
   lastSeenFull: false,
   idleTimeLimitMins: 240,
-  requestDelaySecs: 1,
+  requestDelaySecs: 2,
   requestDelaySecsFull: 60,
   lastRequestTime: moment(),
   errorCodes: {
