@@ -154,8 +154,12 @@ var parseVals = function(vals) {
 
     //pull the project name to the top level
     project.name = project.project.name;
+    var hashtag = 'unknown,unknown';
+    if (project.project.hashtag) {
+      hashtag = project.project.hashtag;
+    }
     project.nanodegree = project.project.nanodegree_key + ': ' +
-      project.project.hashtag.split(',')[1];
+      hashtag.split(',')[1];
     project.money = numToMoney(+project.project.price);
 
   });
@@ -586,11 +590,11 @@ function knownAlerts(key) {
       type: 'danger'
     },
     idleOut : {
-      message: 'You were completely idle longer than 4 hours so the queue turned itself ' + 
+      message: 'You were completely idle longer than 4 hours so the queue turned itself ' +
                'off to minimize the impact to students in case you fell asleep or something.' +
                'hit play to restart the queue if you still want to grab projects',
       type: 'warning'
-    },    
+    },
   };
   addAlert(savedAlerts[key].message, savedAlerts[key].type);
 }
